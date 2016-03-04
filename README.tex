@@ -59,7 +59,7 @@ Let the set of all topologies be denoted $Y$. For a topology $y \in Y$, let $A$ 
 For a continuous formulation of $C_T$, we describe as a differential equation:
 
 \begin{equation} \label{diff-eq-formula}
-  \frac{dC_i}{dt} = 1 - D_i + \sum_{j = 1}^n{W_{ij}}
+  \frac{dC_i}{dt} = - D_i + \sum_{j = 1}^n{W_{ij}}
 \end{equation}
 
 In a discrete simulation context, the initial concentrations of $n$ nodes can be viewed as a vector $C \in \mathbb{R}^n$. Simulation occurs by ``stepping'' the concentration vector. $C_t$ is a time-varying vector, changing at each time $t$, depending upon the previous value $C_{t - 1}$. Stepping refers to applying the formula in \eqref{diff-eq-formula} discretely to each concentration $C_{t_i} \in C$. The initial concentrations $C_{initial}$ are used at $t = 0$, so $C_0$ = $C_{initial}$, and the next step can be described:
@@ -110,7 +110,7 @@ Start by defining metrics $d_I$ and $d_O$ on samples $\alpha, \beta \in A$.
 
 $d_I$ is conceptually the euclidean distance between the input vectors for samples $\alpha, \beta \in A_y$ for some $y \in Y$. $d_O$ is defined similarly.
 
-Nai\"ive robustness of a sample is defined to be: for a given (constant) $\epsilon > 0$, the $\delta > 0$ such that $\forall\, \beta \,s.t.\, \beta \in B_{(d_I)}(\alpha, \epsilon), \beta \in B_{(d_O)}(\alpha, \delta)$. $B(p, r)$ is defined to be the neighborhood about point $p$ with radius $r$ using either metric $d_I$ or $d_O$, as appropriate. This is a relative measure, so a ``robust'' sample is one with a $\delta$ below some arbitrary threshold value. To restate, for some $\epsilon > 0$:
+Nai\"ive robustness of a sample is defined to be: for a given (constant) $\epsilon > 0$, the $\delta > 0$ such that $\forall\, \beta \,s.t.\, \beta \in B_{(d_I)}(\alpha, \epsilon), \beta \in B_{(d_O)}(\alpha, \delta)$. $B_f(p, r)$ is defined to be the neighborhood about point $p$ with radius $r$ using the metric defined by $f$. This is a relative measure, so a ``robust'' sample is one with a $\delta$ below some arbitrary threshold value. To restate, for some $\epsilon > 0$:
 
 \begin{equation}
   s(\alpha) = \argmin_{\delta > 0} \,\forall\, \beta \in B_{(d_I)}(\alpha, \epsilon), \beta \in B_{(d_O)}(\alpha, \delta)
@@ -131,7 +131,7 @@ Let $f,g : A \times A \to \mathbb{R}$. Conceptually, $f$ and $g$ are functions w
 
 It is possible to choose $f, g$ which are not decomposable into $f' \circ\, d_I$ or $g' \circ\, d_O$, but we have not investigated these classes of $f$ and $g$.
 
-$f'$ and $g'$ should be functions which weight ``closer'' vectors greater than ``further'' ones. In the below formulation (for some $\epsilon, \delta > 0$):
+$f'$ and $g'$ should be functions which weight ``closer'' vectors greater than ``further'' ones. For example, for some $\epsilon, \delta > 0$:
 
 \begin{align}
   f'(r) =
@@ -151,7 +151,7 @@ The above is equivalent to the na\"ive definition of robustness of a sample. Oth
 We then define robustness of a sample $\alpha \in A$ as follows.
 
 \begin{equation}
-  s(\alpha) = \int_0^1 \cdots \int_0^1 (f(\alpha, \beta) \cdot g(\alpha, \beta)) \,dI_{\beta_1} \cdots dI_{\beta_p}
+  s(\alpha) = \int_0^1 \cdots \int_0^1 ((f(\alpha, \beta) \cdot g(\alpha, \beta))^{-1}) \,dI_{\beta_1} \cdots dI_{\beta_p}
 \end{equation}
 
 Recall that $p$ is the number of elements in the vector $I$.
@@ -159,10 +159,12 @@ Recall that $p$ is the number of elements in the vector $I$.
 To define this over a discretization of all ranges of the input vectors $I_\beta$:
 
 \begin{equation}
-  s(\alpha) = \sum_{\beta \in A}{f(\alpha, \beta) \cdot g(\alpha, \beta)}
+  s(\alpha) = \sum_{\beta \in A}{(f(\alpha, \beta) \cdot g(\alpha, \beta))^{-1}}
 \end{equation}
 
 As in the na\"ive formula for robustness of a sample, this produces an arbitrary value, which must be judged relative to the value produced by other samples. Unlike the na\"ive formulation, bigger is better.
+
+Consider flipping the exponent to $+1$ and/or subtracting instead of adding?
 
 \section{Aside on Variance Over Time}
 
