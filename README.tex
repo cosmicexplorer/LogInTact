@@ -116,6 +116,8 @@ Nai\"ive robustness of a sample is defined to be: for a given (constant) $\epsil
   s(\alpha) = \argmin_{\delta > 0} \,\forall\, \beta \in B_{(d_I)}(\alpha, \epsilon), \beta \in B_{(d_O)}(\alpha, \delta)
 \end{equation}
 
+Smaller is better.
+
 \subsubsection{Decaying Robustness of a Sample}
 The previous definition of robustness does not take into account samples $\beta \in A$ that are ``far'' away from some sample $\alpha$ (anything with $d_I \ge \epsilon$). The motivation for a more nuanced definition is that even with the assumption that most input parameters (initial concentrations, degradation, etc.) will remain relatively close in a real-world context to the vector $I_\alpha$ (meaning that most input vectors will be normally distributed with mean $I_\alpha$), it would be preferable to create a measure which is influenced by those ``far'' points, just less so than the more likely ``near'' points.
 
