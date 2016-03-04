@@ -40,7 +40,7 @@ A sample of a topology is a topology combined with certain other factors. These 
 \item degradation factor vector $D \in \mathbb{R}^n$
 \end{enumerate}
 
-All these factors are normalized and drawn from the unit interval with granularity $G$ as described in \ref{topology-weights}. They all affect the output concentrations as described in \eqref{timestep-formula}. They can be described as a vector, as can the output concentrations. The use of sample input as a vector is described in \ref{statistic-analysis}. The degradation factor can also model a constant input of a chemical into the system by just making that entry $D_i$ of $D$ negative.
+All these factors are normalized and drawn from the unit interval with granularity $G$ as described in \ref{topology-weights}. They all affect the output concentrations as described in \eqref{diff-eq-formula}. They can be described as a vector, as can the output concentrations. The use of sample input as a vector is described in \ref{statistic-analysis}. The degradation factor can also model a constant input of a chemical into the system by just making that entry $D_i$ of $D$ negative.
 
 \section{Methods} \label{statistic-analysis}
 We define robustness for both a topology $y$ and for a particular sample $\alpha$ of $y$.
@@ -56,13 +56,13 @@ The simulation as described in \ref{simulation} goes from a vector of initial co
 Let the set of all topologies be denoted $Y$. For a topology $y \in Y$, let $A$ be the set of all samples of $y$. For a sample $\alpha \in A$, let $I_{\alpha}$ be the input vector for the sample $\alpha$, and $O_{\alpha}$ be the output vector. Recall that $O_{\alpha} = C_T$ as described in \ref{simulation}. Let $\alpha_i$ be the $i^{th}$ sample of $A$.
 
 \subsection{Simulation} \label{simulation}
-For a continuous formulation of $C_T$, we describe \eqref{timestep-formula} as a differential equation:
+For a continuous formulation of $C_T$, we describe as a differential equation:
 
 \begin{equation} \label{diff-eq-formula}
   \frac{dC_i}{dt} = 1 - D_i + \sum_{j = 1}^n{W_{ij}}
 \end{equation}
 
-In a discrete simulation context, the initial concentrations of $n$ nodes can be viewed as a vector $C \in \mathbb{R}^n$. Simulation occurs by ``stepping'' the concentration vector. $C_t$ is a time-varying vector, changing at each time $t$, depending upon the previous value $C_{t - 1}$. Stepping refers to applying the formula in \eqref{timestep-formula} to each concentration $C_{t_i} \in C$. The initial concentrations $C_{initial}$ are used at $t = 0$, so $C_0$ = $C_{initial}$, and the next step can be described as in \eqref{timestep-formula}:
+In a discrete simulation context, the initial concentrations of $n$ nodes can be viewed as a vector $C \in \mathbb{R}^n$. Simulation occurs by ``stepping'' the concentration vector. $C_t$ is a time-varying vector, changing at each time $t$, depending upon the previous value $C_{t - 1}$. Stepping refers to applying the formula in \eqref{diff-eq-formula} discretely to each concentration $C_{t_i} \in C$. The initial concentrations $C_{initial}$ are used at $t = 0$, so $C_0$ = $C_{initial}$, and the next step can be described:
 
 \begin{equation} \label{timestep-formula}
   C_{{(t + 1)}_i} = C_{t_i} (1 - D_i + \sum_{j = 1}^n{W_{ij}})
