@@ -5,7 +5,6 @@
 \usepackage{hyperref}
 
 \DeclareMathOperator*{\arginf}{arginf}
-\DeclareMathOperator*{\argsup}{argsup}
 
 \title{Topological Modelling of Biological Interactions for Robustness}
 \date{}
@@ -71,10 +70,10 @@ The general formulation of robustness can be used to model the simple formulatio
     0 & else
   \end{cases} \\
   M_{sup}(S) &= \sup\limits_{\sigma \,s.t.\, f(S, \sigma) = 1} M(S, \sigma) \\
-  g(S, S') &= \begin{cases}
+  g(S, S') &= \frac{\begin{cases}
     1 & M(S, S') < M_{sup}(S) \\
     0 & else
-  \end{cases} \\
+  \end{cases}}{\int_{S'' \in \Sigma} f(S, S'')} \\
   h(a, b) &= a \cdot b
 \end{align}
 
@@ -83,6 +82,10 @@ Or, more simply:
 \begin{align}
   M_{sup}(S) &= \sup\limits_{\sigma \,s.t.\, \lvert s_0 - \sigma \rvert < \epsilon} M(S, \sigma) \\
   f(S, S') &= 1 \\
+  g(S, S') &= \begin{cases}
+    1 & M(S, S') < M_{sup}(S) \\
+    0 & else
+  \end{cases}
 \end{align}
 
 The linear formulation of robustness is a member of the class of functions defined by the general formulation, and is used in \ref{max-robust}.
@@ -100,7 +103,7 @@ Given $\epsilon > 0$. Let $S' = \langle s_0', D, W \rangle$ for some $s_0' \in \
 
 \begin{align}
   \Sigma_{similar} &= \{S' \in \Sigma \,\,|\, M_l(S, S') < \epsilon \} \\
-  S^* &= \argsup_{S' \in \Sigma_{similar}} R_l(S')
+  S^* &= \arginf_{S' \in \Sigma_{similar}} R_l(S')
 \end{align}
 
 We can probably do this by taking the derivative of $R_l$, somehow.
