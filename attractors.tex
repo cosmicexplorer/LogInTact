@@ -1,0 +1,108 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+\DeclareMathOperator*{\arginf}{arginf}
+\DeclareMathOperator*{\argsup}{argsup}
+
+\title{Topological Modelling of Biological Interactions for Robustness}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-50pt}
+
+\section{Goals}
+\begin{enumerate}
+\item To define measures of similarity and robustness of network topologies so that small changes in the input do not affect the output.
+\item To create a method of finding networks which produce the desired chemical concentrations with a high degree of robustness against changes in input.
+\end{enumerate}
+
+\section{Description as Dynamical System}
+Biological chemical networks can be described in terms of dynamical systems with inputs. At this point we make the assumption that inputs to the system $D$ (degradation, external input) are linear, as well as repression or induction of one chemical on another $W$. We can then describe a system $S = \langle s_0, D, W \rangle$ such that $s_0 \in \mathbb{R}^n, D \in \mathbb{R}^n, W \in \mathbb{M}^n$, where $\mathbb{M}^n = R^{n \times n}$. Let $s_i$ be the $i^{th}$ component of state vector $s$. $\Sigma$ refers to the set of all such systems $S$.
+
+\begin{align}
+  S &= \langle s_0, D, W \rangle \label{system-defn} \\
+  \frac{ds_i}{dt}(t) &= D_i s_i(t) + \sum_{j = 1}^n W_{ji} \cdot s_j(t) \label{system-diffeq}
+\end{align}
+
+\section{Similarity of a Dynamical System} \label{similarity}
+We define similarity of a dynamical system of this type to quantify the ``closeness'' of one network to another. We allow ``shifting'' and ``stretching'' of the attractor of the system to form a bijection from one system to a transformed system which is as close to the other system as possible. In the below equations, stretching is performed by the factors $\phi_1, \phi_2$, and shifting is performed by the offsets $t_{p_1}, t_{p_2}$.
+
+$M_g$ is called the ``generalized'' similarity between two systems, and $M_l$ is the ``linear'' form of that generalized similarity. In the equation for $M_g$, $P$ is the ``penalty'' for shifting and stretching, and $d$ is an arbitrary metric to determine closeness of two state vectors $s_1, s_2 \in \mathbb{R}^n$. $s(t)$ is the value of the state vector $s$ at time $t$.
+
+\begin{align}
+  M &: \Sigma \times \Sigma \to \mathbb{R} \\
+  s_1' &= s_1(\phi_1 \cdot (t + t_{p_1})) \\
+  s_2' &= s_2(\phi_2 \cdot (t + t_{p_2})) \\
+  M_g(S_1, S_2) &= \min_{\substack{\phi_1, \phi_2 \ge 1 \\ t_{p_1}, t_{p_2} \ge 0}} P\bigg(\int_0^\infty d(s_1'(t), s_2'(t)) \,dt, \phi_1, \phi_2, t_{p_1}, t_{p_2}\bigg) \\
+  P_l(r, \phi_1, \phi_2, t_{p_1}, t_{p_2}) &= r \phi_1 \phi_2 + t_{p_1} + t_{p_2} \\
+  d_l(s_1, s_2) &= \lvert s_1' - s_2' \rvert \\
+  M_l(S_1, S_2) &= \min_{\substack{\phi_1, \phi_2 \ge 1 \\ t_{p_1}, t_{p_2} \ge 0}} \bigg(\int_0^\infty \lvert s_1'(t) - s_2'(t) \rvert \,dt\bigg) \phi_1 \phi_2 + t_{p_1} + t_{p_2} \label{linear-similarity}
+\end{align}
+
+\section{Robustness of a Dynamical System}
+``Robustness'' is meant to quantify the tendency of the system to remain similar (the ``similarity'' defined in \ref{similarity}) given small changes in input. There is a simple formulation $R_s(s)$ used to motivate a more general formulation $R_g(s)$, and finally a linear formulation $R_l(s)$, which is what is used in \ref{max-robust}.
+
+The simple formulation quantifies the condition that all ``nearby'' systems have ``similar'' behavior. This is extremely similar to the definition of continuity of a function at a point in a topological space. Nearby systems to a state are those within the ball centered at that state, for a given radius $\epsilon > 0$, using some metric $m$. $m$ is \textit{not} the similarity metric discussed in \ref{similarity}. An \textit{example} of $m$ is given in \eqref{example-metric}. $s_{i_0}$ refers to the initial state vector $s_0$ for the system $S_i$.
+
+\begin{align}
+  R &: \Sigma \to \mathbb{R} \\
+  m(S_1, S_2) &= \lvert s_{1_0} - s_{2_0} \rvert \label{example-metric} \\
+  R_s(S) &= \arginf_{\delta > 0} M(S, S') < \delta \,\forall\, S' \in B_m(s, \epsilon)
+\end{align}
+
+The general formulation of robustness of a system is defined in terms of three functions $f$, $g$, and $h$. $f$ represents how ``important'' the initial states near some state $s$ are, $g$ represents how ``important'' the similarity of each nearby system is, and $h$ combines the two measures.
+
+\begin{align}
+  f &: \Sigma \times \Sigma \to \mathbb{R} \\
+  g &: \Sigma \times \Sigma \to \mathbb{R} \\
+  h &: \mathbb{R} \times \mathbb{R} \to \mathbb{R} \\
+  R_g(S) &= \int_{S' \in \Sigma} h(f(S, S'), g(S, S'))
+\end{align}
+
+The general formulation of robustness can be used to model the simple formulation, given $\epsilon > 0$.
+
+\begin{align}
+  f(S, S') &= \begin{cases}
+    1 & \lvert s_0 - s_0' \rvert \\
+    0 & else
+  \end{cases} \\
+  M_{sup}(S) &= \sup\limits_{\sigma \,s.t.\, f(S, \sigma) = 1} M(S, \sigma) \\
+  g(S, S') &= \begin{cases}
+    1 & M(S, S') < M_{sup}(S) \\
+    0 & else
+  \end{cases} \\
+  h(a, b) &= a \cdot b
+\end{align}
+
+Or, more simply:
+
+\begin{align}
+  M_{sup}(S) &= \sup\limits_{\sigma \,s.t.\, \lvert s_0 - \sigma \rvert < \epsilon} M(S, \sigma) \\
+  f(S, S') &= 1 \\
+\end{align}
+
+The linear formulation of robustness is a member of the class of functions defined by the general formulation, and is used in \ref{max-robust}.
+
+\begin{align}
+  f(S, S') &= \lvert s_0 - s_0' \rvert^{-1} \\
+  g &= M_l \\
+  R_l(S) &= \int_{S' \in \Sigma} \frac{M_l(S, S')}{\lvert s_0 - s_0' \rvert} \label{linear-robustness}
+\end{align}
+
+\section{Finding Maximally Robust Approximately Isomorphic Systems} \label{max-robust}
+Given \eqref{system-defn}, \eqref{system-diffeq}, \eqref{linear-similarity}, and \eqref{linear-robustness}, we can attempt to solve the problem posed in the introduction. We start with these linear formulations because we believe they will be easier to solve in closed form. We wish to find a system $S^*$ which is similar to some system $S$ and which is maximally robust.
+
+Given $\epsilon > 0$. Let $S' = \langle s_0', D, W \rangle$ for some $s_0' \in \mathbb{R}^n$.
+
+\begin{align}
+  \Sigma_{similar} &= \{S' \in \Sigma \,\,|\, M_l(S, S') < \epsilon \} \\
+  S^* &= \argsup_{S' \in \Sigma_{similar}} R_l(S')
+\end{align}
+
+We can probably do this by taking the derivative of $R_l$, somehow.
+
+\end{document}
