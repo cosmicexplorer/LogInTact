@@ -82,12 +82,12 @@ For two systems $y_1, y_2 \in Y$, we define the distance $M : Y \times Y \to \ma
 \begin{align}
   F : Y \to \mathbb{R}^+ \\
   R : Y \to \mathbb{R}^+ \\
-  R(y) = F^{-1}(y)
+  R(y) = F(y)^{-1}
 \end{align}
 
 \subsection{Simple Robustness}
 The simple formulation quantifies the condition that all ``nearby'' systems have ``similar'' behavior. This is extremely similar to the definition of continuity of a function at a point in a topological space. Nearby systems to a state are those within the ball centered at that state, for a given radius $\epsilon > 0$, using the euclidean metric for \textit{initial state vectors}; this metric is denoted as $m$, separate from the $M$ defined in \eqref{distance}. $s_{i_0}$ refers to the initial state vector $s_0$ for the system $y_i$.
-
+p
 The below definition of fragility describes the radius $\delta$ (defined by the difference $M$ in \eqref{distance}) required to contain all systems within radius $\epsilon$ (defined by the metric $m$ described above).
 
 \begin{align}
