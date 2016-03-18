@@ -1,0 +1,141 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+\DeclareMathOperator*{\argmin}{argmin}
+
+\title{Topological Modelling of Biological Interactions for Robustness}
+\author{Danny McClanahan and William Cox \\
+Vanderbilt University}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-25pt}
+
+\section{Goals}
+\begin{description}
+\item[Notation] \hfill \\
+  To establish a framework for understanding chains of biological reactions as dynamical systems.
+\item[Analysis] \hfill \\
+  To define measures of similarity and robustness for dynamical systems so that a quantifiably small change in the input does not strongly affect the output.
+\item[Application] \hfill
+  \begin{enumerate}
+  \item To create a method of finding systems which produce the desired chemical concentrations with a high degree of robustness against changes in input.
+  \item To find which neighborhoods of inputs to systems lead to groups of systems with similar behavior.
+  \item To produce a software library to find robust alternatives to known biological reactions.
+  \item To produce a predictor for equilibrium points for these systems.
+  \item To use the predictor to identify how different input values can quantifiably affect the output behavior of a system.
+  \end{enumerate}
+\item[Verification] \hfill
+  \begin{enumerate}
+  \item To verify that the robustness metric defined in this study increases the resilience of a system to factors such as mutation which can modify biological networks.
+  \end{enumerate}
+\end{description}
+
+\section{Description as Dynamical System} \label{description}
+Biological chemical networks can be described in terms of dynamical systems with inputs. $n$ is the number of chemicals in the system. $W$ is a matrix of functions which map time and concentrations of two chemicals to the amount which the concentration of the first chemical is affected. $W$ models internal influences, such as repression or induction of one chemical on another (or itself). $D$ is a vector of functions which map a time $t$ to some real number. $D$ models external influences, such as an input or degradation of a chemical into the system over time.
+
+Let $\mathbb{R}^+ = \{r \in \mathbb{R} \,\,|\,\, r \ge 0\}$. Formally, we can describe a system $j = \langle s_0, D, W \rangle$ such that $s_0 \in \mathbb{R}^n, D \in (\mathbb{R}^+ \to \mathbb{R})^n, W \in (\mathbb{R}^+ \times \mathbb{R} \times \mathbb{R} \to \mathbb{R})^{n \times n}$. $s(t)$ is a state vector of chemical concentrations at time $t$. Let $s_i(t)$ be the $i^{th}$ component of state vector $x$ at time $t$. $Y$ refers to the set of all such systems $y$. Then, $Y = \mathbb{R}^n \times (\mathbb{R}^+ \to \mathbb{R})^n \times (\mathbb{R}^+ \times \mathbb{R} \times \mathbb{R} \to \mathbb{R})^{n \times n}$.
+
+\begin{align}
+  y &= \langle s_0, D, W \rangle \label{system-defn} \\
+  \frac{ds_i}{dt}(t) &= D_i(t) + \sum_{j = 1}^n W_{ji}(t, s_j(t), s_i(t)) \label{system-diffeq}
+\end{align}
+
+Note that the system is described in terms of $s_0$ and parameters to the differential equation $\frac{ds}{dt}$, not by a single function $s(t)$, its state vector at time $t$. This is because while explicit, closed-form solutions to some dynamical systems (strictly linear ones) do exist, this is not true in the general case, so obtaining a single formula for $s(t)$ is impossible. Modelling of the dynamics of these systems is possible by discretization, but there is some error between the simulated version of the system and the true $s(t)$, which can become extremely significant in some cases, particularly where the dynamics become chaotic. The effect of this discrepancy is discussed in \textbf{(where?)} when applying this model to real systems.
+
+\section{Difference Between Dynamical Systems} \label{similarity}
+We define a ``difference'' of dynamical systems of this type to quantify the ``closeness'' of one network's behavior to another. This is defined in two ways. First note that there is a difference between the parameters (``input'') of a system and the system's behavior (``output'').
+
+The inputs of a system are the values of $\langle s_0, D, W \rangle$. The ``distance'' between these is problem-dependent. For modelling a linear system, for example, $D$ and $W$ can be a vector and a matrix, and distance can simply be the euclidean distance, as discussed in \textbf{(where?)}. For more complex systems, ``input distance'' can be mapped to a normal distribution, as discussed in \textbf{(where?)}.
+
+The ``output distance'' of a system is some way to quantify the distance between attractors of the system, or the behavior of the system over time. For systems with a defined convergence point, the distance between the two can be reduced to just the distance between the convergence points, as discussed in \textbf{(where?)}. For more complex periodic or aperiodic systems, other methods are usable as well, as discussed in \textbf{(where?)}.
+
+\subsection{Equilibrium System}
+We only concern ourselves with systems ``spinning'' about an ``equilibrium region'' for now. We create a time $t_e : Y \to \mathbb{R}$ ($e$ for ``equilibrium'', even though actual equilibrium is constant) to represent the time at which a system begins spinning about an equilibrium region.
+
+Given some $\epsilon > 0$, and $t_f$ a final time point at which we stop observing the system, we define $t_e(y)$ as follows:
+
+\begin{equation}
+  \int_{t_e(y)}^{t_f} \lvert s(t) - s(t_e(y)) \rvert\, dt < \epsilon \label{t_e}
+\end{equation}
+
+\textbf{EXPLAIN THAT $t_f$ IS REQUIRED SO THAT THE INTEGRAL CONVERGES}
+
+\subsubsection{Definition of Difference}
+For two systems $y_1, y_2 \in Y$, we define the distance $M : Y \times Y \to \mathbb{R}^+$ ($M$ for ``metric'', even though this isn't a metric (I think)). Let $t_e' = \max(t_e(y_1),t_e(y_2))$.
+
+\begin{equation}
+  M_{eq}(y_1, y_2) = \int_{t_e'}^{t_f} \lvert s_1(t) - s_2(t) \rvert\, dt \label{distance}
+\end{equation}
+
+\subsection{Periodic System}
+\textbf{DO AN EXAMPLE OF A PERIODIC SYSTEM AS WELL \\
+  ALLOW SHIFTING AND STRETCHING}
+
+\section{Robustness of a Dynamical System} \label{robustness}
+``Robustness'' is meant to quantify the tendency of the system to remain similar (the ``similarity'' defined in \ref{similarity}) given small changes in input. Robustness $R$ is described as the inverse of a fragility $F$. There is a simple formulation $F_s$ used to motivate a more general formulation $F_g$.
+
+\begin{align}
+  F : Y \to \mathbb{R}^+ \\
+  R : Y \to \mathbb{R}^+ \\
+  R(y) = F^{-1}(y)
+\end{align}
+
+\subsection{Simple Robustness}
+The simple formulation quantifies the condition that all ``nearby'' systems have ``similar'' behavior. This is extremely similar to the definition of continuity of a function at a point in a topological space. Nearby systems to a state are those within the ball centered at that state, for a given radius $\epsilon > 0$, using the euclidean metric for \textit{initial state vectors}; this metric is denoted as $m$, separate from the $M$ defined in \eqref{distance}. $s_{i_0}$ refers to the initial state vector $s_0$ for the system $y_i$.
+
+The below definition of fragility describes the radius $\delta$ (defined by the difference $M$ in \eqref{distance}) required to contain all systems within radius $\epsilon$ (defined by the metric $m$ described above).
+
+\begin{align}
+  m(y_1, y_2) &= \lvert s_{1_0} - s_{2_0} \rvert \label{example-metric} \\
+  F_s(y) &= \argmin_{\delta > 0} M(y, y') < \delta \,\forall\, y' \in B_m(s, \epsilon)
+\end{align}
+
+\subsection{General Robustness} \label{general-robustness}
+The general formulation of fragility of a system is defined in terms of three functions $f$, $g$, and $h$. $f$ ``weights'' each possible pair of initial states, $g$ ``weights'' the difference between each nearby system's behavior (and therefore typically makes use of the distance $M$ from \eqref{distance}), and $h$ combines the two measures.
+
+\begin{align}
+  f &: Y \times Y \to \mathbb{R} \\
+  g &: Y \times Y \to \mathbb{R} \\
+  h &: \mathbb{R} \times \mathbb{R} \to \mathbb{R} \\
+  F_g(y) &= \int_{y' \in Y} h(f(y, y'), g(y, y')) \label{general-fragility}
+\end{align}
+
+As an example of the utility of $F_g$, it can be used to model the simple formulation $F_s$, given some $\epsilon > 0$.
+
+\begin{align}
+  M_{max}(y) &= \max\limits_{\sigma \,s.t.\, m(s_0, \sigma) < \epsilon} M(y, \sigma) \\
+  f(y, y') &= 1 \\
+  g(y, y') &= \begin{cases}
+    1 & M(y, y') < M_{max}(y) \\
+    0 & else
+  \end{cases} \\
+  h(a, b) &= a \cdot b
+\end{align}
+
+These general formulations $F_g$ and $R_g$ become extremely useful when characterizing complex or stochastic behavior, as seen in \ref{max-robust}.
+
+\section{Finding Maximally Robust Similar Systems} \label{max-robust}
+Given \eqref{system-defn}, \eqref{system-diffeq}, \eqref{distance}, and \eqref{general-fragility}, we can attempt to solve the problem posed in the introduction. We wish to find a system $y^*$ which is similar to some system $y$ and which is maximally robust for some expected values of inputs.
+
+Given $\epsilon > 0$. Let $y' = \langle s_0', D, W \rangle$ for some $s_0' \in \mathbb{R}^n$. This means $y'$ has the same parameters $D$ and $W$ as a network $y \in Y$, but a different initial state.
+
+\textbf{THIS ASSUMES ONLY EQUILIBRIUM WITH $M = \lvert \cdot \rvert$ FIX THAT}
+
+\begin{align}
+  Y_{similar} &= \{y' \in Y \,\,|\, M(y, y') < \epsilon \} \\
+  y^* &= \argmin_{y' \in Y} F(y')
+\end{align}
+
+\subsection{Modelling Stochastic Distributions Using a Weight Function}
+In \ref{general-robustness}, we described how we use the function $f$ to ``weight'' certain pairings of systems, in a sort of distance-like metric. This can be used to model stochastic distributions of parameters.
+
+Recall that a system $y \in Y$ is described by a tuple $\langle s_0, D, W \rangle$. We shall assume that each parameter arises from a normal distribution with mean $\mu$ and standard deviation $\sigma$. This produces vectors $\mu_y \in \mathbb{R}^{2n + n^2}, \sigma_y \in \mathbb{R}^{2n + n^2}$ ($2n + n^2$ is the number of all parameters in a system $y$, as described in \ref{description}). We can then make an $f$ which weights other systems $y'$ according to how far they deviate from their mean in $\mu_y$.
+
+
+
+\end{document}
