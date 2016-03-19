@@ -62,6 +62,12 @@ class linear_sim
 {
   parameters params;
 
+  inline static double dist_euclid(const std::vector<double> &,
+                                   const std::vector<double> &);
+  inline static std::vector<double>
+      average_position(const std::vector<std::vector<double>> &, size_t);
+  inline static std::vector<double> divide(const std::vector<double> &, double);
+
 public:
   linear_sim(const parameters & p) : params(p)
   {
@@ -70,7 +76,8 @@ public:
   inline double D(size_t);
   inline double W(size_t, double, size_t);
   /* returns s_e, mean of all points at t > t_e */
-  std::vector<double> simulate(double, size_t);
+  /* consider adding t_e as well */
+  std::vector<double> simulate(double, size_t, double);
 };
 }
 

@@ -13,9 +13,7 @@
 /* $$$ */
 int main()
 {
-  using sim::range;
-  sim::linear lin_sim(std::vector<range>{range{-1, 1, 5}},
-                      std::vector<range>{range{-1, 1, 5}},
-                      std::vector<range>{range{-1, 1, 5}});
-  lin_sim.simulate(5, 50);
+  sim::parameters p{{0}, {-.5}, sim::simple_matrix(1, 1, {1})};
+  sim::linear_sim lin_sim(p);
+  std::cout << lin_sim.simulate(5, 50, .1)[0] << std::endl;
 }
