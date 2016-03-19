@@ -42,7 +42,7 @@ Let $\mathbb{R}^+ = \{r \in \mathbb{R} \,\,|\,\, r \ge 0\}$. Formally, we can de
 
 \begin{align}
   y &= \langle s_0, D, W \rangle \label{system-defn} \\
-  \frac{ds_i}{dt}(t) &= D_i(t) + \sum_{j = 1}^n W_{ji}(t, s_j(t), s_i(t)) \label{system-diffeq}
+  \frac{ds_i}{dt}(t) &= D_i(t) + \sum_{j = 1}^n W_{ij}(t, s_j(t), s_i(t)) \label{system-diffeq}
 \end{align}
 
 Note that the system is described in terms of $s_0$ and parameters to the differential equation $\frac{ds}{dt}$, not by a single function $s(t)$, its state vector at time $t$. This is because while explicit, closed-form solutions to some dynamical systems (strictly linear ones) do exist, this is not true in the general case, so obtaining a single formula for $s(t)$ is impossible. Modelling of the dynamics of these systems is possible by discretization, but there is some error between the simulated version of the system and the true $s(t)$, which can become extremely significant in some cases, particularly where the dynamics become chaotic. The effect of this discrepancy is discussed in \textbf{(where?)} when applying this model to real systems.
@@ -66,11 +66,14 @@ Given some $\epsilon > 0$, and $t_f$ a final time point at which we stop observi
 \textbf{EXPLAIN THAT $t_f$ IS REQUIRED SO THAT THE INTEGRAL CONVERGES}
 
 \subsubsection{Definition of Difference}
-For two systems $y_1, y_2 \in Y$, we define the distance $M : Y \times Y \to \mathbb{R}^+$ ($M$ for ``metric'', even though this isn't a metric (I think)). Let $t_e' = \max(t_e(y_1),t_e(y_2))$.
+For two systems $y_1, y_2 \in Y$, we define the distance $M$ ($M$ for ``metric'', even though this isn't a metric (I think)). For equilibrium systems, we denote this $M_{eq}$. $s_e$ is the average of all points past $t_e$, and represents the equilibrium point of the system.
 
-\begin{equation}
-  M_{eq}(y_1, y_2) = \int_{t_e'}^{t_f} \lvert s_1(t) - s_2(t) \rvert\, dt \label{distance}
-\end{equation}
+\begin{align}
+  s_e &: Y \to \mathbb{R}^n \\
+  s_{e_i}(y) &= \frac{\int_{t_e(y)}^{t_f} s_i(t) \,dt}{t_f - t_e(y)} \,\forall\, i \\
+  M &: Y \times Y \to \mathbb{R}^+ \\
+  M_{eq}(y_1, y_2) &= \lvert s_e(y_1) - s_e(y_2) \rvert \label{distance}
+\end{align}
 
 \subsection{Periodic System}
 \textbf{DO AN EXAMPLE OF A PERIODIC SYSTEM AS WELL \\
