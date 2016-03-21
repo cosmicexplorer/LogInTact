@@ -20,13 +20,13 @@ typename linear_sim<n, G>::Vector
     linear_sim<n, G>::average_position(const RealType * __restrict__ states,
                                        size_t step)
 {
-  size_t l          = G - step + 1;
+  size_t l          = G - step;
   RealType divideBy = l;
   Vector results{0};
-  for (size_t t = 0; t < l; ++t) {
-    const RealType * __restrict__ cur = states + t;
+  states += n * step;
+  for (size_t t = 0; t < l; ++t, states += n) {
     for (size_t i = 0; i < n; ++i) {
-      results[i] += cur[i] / divideBy;
+      results[i] += states[i] / divideBy;
     }
   }
   return results;
@@ -73,20 +73,17 @@ template <size_t n, size_t G>
 size_t linear_sim<n, G>::t_e(RealType epsilon)
 {
   const RealType * __restrict__ states_ptr = s_t.data();
-  for (size_t t_e = 0; t_e <= G; ++t_e) {
-    RealType cur_integral = 0;
-    const RealType * s_e = states_ptr + t_e;
-    for (size_t t = t_e + 1; t <= G; ++t) {
-      RealType cur_diff = dist_euclid(s_e, states_ptr + t);
-      cur_integral += cur_diff;
-      if (cur_integral >= epsilon) {
-        break;
-      }
+  for (size_t t_e = 0; t_e <= G; ++t_e, states_ptr += n) {
+    RealType cur_integral             = 0;
+    size_t diff                       = G - t_e;
+    const RealType * __restrict__ s_t = states_ptr + n;
+    for (size_t t = 1; t <= diff && cur_integral < epsilon; ++t, s_t += n) {
+      cur_integral += dist_euclid(states_ptr, s_t);
     }
-    if (cur_integral >= epsilon) {
-      continue;
-    } else {
+    if (cur_integral < epsilon) {
       return t_e;
+    } else {
+      continue;
     }
   }
   return G;
