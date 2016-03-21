@@ -36,13 +36,13 @@ Vanderbilt University}
 \end{description}
 
 \section{Description as Dynamical System} \label{description}
-Biological chemical networks can be described in terms of dynamical systems with inputs. $n$ is the number of chemicals in the system. $W$ is a matrix of functions which map time and concentrations of two chemicals to the amount which the concentration of the first chemical is affected. $W$ models internal influences, such as repression or induction of one chemical on another (or itself). $D$ is a vector of functions which map a time $t$ to some real number. $D$ models external influences, such as an input or degradation of a chemical into the system over time.
+Biological chemical networks can be described in terms of dynamical systems with inputs. $n$ is the number of chemicals in the system. $W$ is an $n \times n$ matrix of functions which map time and concentrations of two chemicals to the amount which the concentration of the first chemical is affected. $W$ models internal influences, such as inhibition or induction of one chemical on another (or itself). $D$ is an n-tuple of functions which map a time $t$ to some real number. $D$ models external influences, such as input of a chemical and the natural degradation of a chemical over time.
 
-Let $\mathbb{R}^+ = \{r \in \mathbb{R} \,\,|\,\, r \ge 0\}$. Formally, we can describe a system $j = \langle s_0, D, W \rangle$ such that $s_0 \in \mathbb{R}^n, D \in (\mathbb{R}^+ \to \mathbb{R})^n, W \in (\mathbb{R}^+ \times \mathbb{R} \times \mathbb{R} \to \mathbb{R})^{n \times n}$. $s(t)$ is a state vector of chemical concentrations at time $t$. Let $s_i(t)$ be the $i^{th}$ component of state vector $x$ at time $t$. $Y$ refers to the set of all such systems $y$. Then, $Y = \mathbb{R}^n \times (\mathbb{R}^+ \to \mathbb{R})^n \times (\mathbb{R}^+ \times \mathbb{R} \times \mathbb{R} \to \mathbb{R})^{n \times n}$.
+Let $\mathbb{R}^+ = \{r \in \mathbb{R} \,\,|\,\, r \ge 0\}$. Formally, we can describe a system $j = \langle s_0, D, W \rangle$ such that $s_0 \in \mathbb{R}^n, D_i \in \mathbb{R}^{\mathbb{R}^+}, W_{ij} \in \mathbb{R}^{\mathbb{R}^+ \times \mathbb{R}}$. $s(t) \in \mathbb{R}^n$ is a state vector of chemical concentrations at time $t$. Let $s_i(t)$ be the $i^{th}$ component of state vector $x$ at time $t$. $Y$ refers to the set of all such systems $y$. Then, $Y = \mathbb{R}^n \times (\mathbb{R}^{\mathbb{R}+})^n \times (\mathbb{R}^{\mathbb{R}^+ \times \mathbb{R}})^n$.
 
 \begin{align}
   y &= \langle s_0, D, W \rangle \label{system-defn} \\
-  \frac{ds_i}{dt}(t) &= D_i(t) + \sum_{j = 1}^n W_{ij}(t, s_j(t), s_i(t)) \label{system-diffeq}
+  \frac{ds_i}{dt}(t) &= D_i(t) + \sum_{j = 1}^n W_{ij}(t, s_i(t)) \label{system-diffeq}
 \end{align}
 
 Note that the system is described in terms of $s_0$ and parameters to the differential equation $\frac{ds}{dt}$, not by a single function $s(t)$, its state vector at time $t$. This is because while explicit, closed-form solutions to some dynamical systems (strictly linear ones) do exist, this is not true in the general case, so obtaining a single formula for $s(t)$ is impossible. Modelling of the dynamics of these systems is possible by discretization, but there is some error between the simulated version of the system and the true $s(t)$, which can become extremely significant in some cases, particularly where the dynamics become chaotic. The effect of this discrepancy is discussed in \textbf{(where?)} when applying this model to real systems.
@@ -63,7 +63,8 @@ Given some $\epsilon > 0$, and $t_f$ a final time point at which we stop observi
   \int_{t_e(y)}^{t_f} \lvert s(t) - s(t_e(y)) \rvert\, dt < \epsilon \label{t_e}
 \end{equation}
 
-\textbf{EXPLAIN THAT $t_f$ IS REQUIRED SO THAT THE INTEGRAL CONVERGES}
+\textbf{EXPLAIN THAT $t_f$ IS REQUIRED SO THAT THE INTEGRAL CONVERGES \\
+ADD IMAGE EXPLAINING VISUALLY HOW WE DEFINE SOME OF THESE TERMS}
 
 \subsubsection{Definition of Difference}
 For two systems $y_1, y_2 \in Y$, we define the distance $M$ ($M$ for ``metric'', even though this isn't a metric (I think)). For equilibrium systems, we denote this $M_{eq}$. $s_e$ is the average of all points past $t_e$, and represents the equilibrium point of the system.
