@@ -36,6 +36,14 @@ public:
                                 std::to_string(m_s));
     }
   }
+  inline double operator[](size_t i) const
+  {
+    if (i >= mem.size()) {
+      throw dimension_exception(std::string("i index too large: ") +
+                                std::to_string(i));
+    }
+    return mem[i];
+  }
   inline double operator()(size_t x, size_t y) const
   {
     /* TODO: consider trashing these ifs if they stop vectorization */

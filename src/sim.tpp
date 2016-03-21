@@ -32,7 +32,7 @@ std::vector<double> linear_sim::average_position(
       results[i] += cur[i];
     }
   }
-  return divide(results, l);
+  return divide(results, l - step);
 }
 
 std::vector<double> linear_sim::divide(const std::vector<double> & v, double d)
@@ -82,8 +82,8 @@ std::vector<double> linear_sim::simulate(double t_f, size_t G, double epsilon)
   }
   /* now find s_e */
   for (size_t t_e = 0; t_e < G; ++t_e) {
-    double cur_integral     = 0;
-    std::vector<double> s_e = states[t_e];
+    double cur_integral             = 0;
+    const std::vector<double> & s_e = states[t_e];
     for (size_t t = t_e; t < G; ++t) {
       double cur_diff = dist_euclid(s_e, states[t]);
       cur_integral += cur_diff;
@@ -97,6 +97,6 @@ std::vector<double> linear_sim::simulate(double t_f, size_t G, double epsilon)
       return average_position(states, t_e);
     }
   }
-  throw dimension_exception("should never get here!");
+  throw std::runtime_error("should never get here!");
 }
 }
