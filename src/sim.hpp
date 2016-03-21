@@ -13,79 +13,33 @@ struct dimension_exception : std::runtime_error {
   }
 };
 
-struct range {
-  double beg;
-  double end;
-  size_t G;
-};
+typedef double RealType;
 
-class simple_matrix
-{
-  std::vector<double> mem;
-  size_t x_max;
-  size_t y_max;
+template <size_t n, size_t G>
+struct linear_sim {
+  static constexpr size_t VectorSize = n * sizeof(RealType);
+  typedef std::array<RealType, n> Vector;
+  typedef std::array<RealType, n * n> Matrix;
+  typedef std::array<RealType, n *(G + 1)> StateCells;
+  Vector s_0;
+  Vector D_cells;
+  Matrix W_cells;
+  StateCells s_t;
 
-public:
-  simple_matrix(size_t x, size_t y, const std::vector<double> & m)
-      : mem(m), x_max(x), y_max(y)
-  {
-    size_t m_s = m.size();
-    if (x * y != m_s) {
-      throw dimension_exception(std::string("boundary: x * y = ") +
-                                std::to_string(x * y) + " vs m.size() = " +
-                                std::to_string(m_s));
-    }
-  }
-  inline double operator[](size_t i) const
-  {
-    if (i >= mem.size()) {
-      throw dimension_exception(std::string("i index too large: ") +
-                                std::to_string(i));
-    }
-    return mem[i];
-  }
-  inline double operator()(size_t x, size_t y) const
-  {
-    /* TODO: consider trashing these ifs if they stop vectorization */
-    if (x >= x_max) {
-      throw dimension_exception(std::string("x index too large: ") +
-                                std::to_string(x));
-    }
-    if (y >= y_max) {
-      throw dimension_exception(std::string("y index too large: ") +
-                                std::to_string(y));
-    }
-    return mem[x * x_max + y];
-  }
-};
+  inline static RealType dist_euclid(const RealType *, const RealType *);
+  /* n.b.: don't screw up the indexing here! */
+  inline static Vector average_position(const RealType *, size_t);
 
-struct parameters {
-  const std::vector<double> & s_0;
-  const std::vector<double> & D;
-  const simple_matrix & W;
-};
-
-/* TODO: make this generic enough for nonlinear sims later */
-class linear_sim
-{
-  parameters params;
-
-  inline static double dist_euclid(const std::vector<double> &,
-                                   const std::vector<double> &);
-  inline static std::vector<double>
-      average_position(const std::vector<std::vector<double>> &, size_t);
-  inline static std::vector<double> divide(const std::vector<double> &, double);
-
-public:
-  linear_sim(const parameters & p) : params(p)
-  {
-  }
-
-  inline double D(size_t);
-  inline double W(size_t, double, size_t);
+  inline RealType D(size_t);
+  inline RealType W(size_t, RealType, size_t);
+  inline void fill_states(RealType);
+  /* call these only after fill_states called! */
+  /* returns index into s_t, NOT the actual time t_e */
+  inline size_t t_e(RealType);
+  inline Vector s_e(size_t);
   /* returns s_e, mean of all points at t > t_e */
-  /* consider adding t_e as well */
-  std::vector<double> simulate(double, size_t, double);
+  /* consider adding t_e to return value as well */
+  Vector simulate(RealType, RealType);
 };
 }
 

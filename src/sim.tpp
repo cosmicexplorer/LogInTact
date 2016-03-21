@@ -1,91 +1,83 @@
 #include <cmath>
+#include <cstring>
 
 namespace sim
 {
-double linear_sim::dist_euclid(const std::vector<double> & a,
-                               const std::vector<double> & b)
+template <size_t n, size_t G>
+RealType linear_sim<n, G>::dist_euclid(const RealType * __restrict__ a,
+                                       const RealType * __restrict__ b)
 {
-  size_t s = a.size();
-  if (s != b.size()) {
-    throw dimension_exception("vectors are different sizes!");
-  }
-  double sum = 0;
-  for (size_t i = 0; i < s; ++i) {
-    double diff = a[i] - b[i];
+  RealType sum = 0;
+  for (size_t i = 0; i < n; ++i) {
+    RealType diff = a[i] - b[i];
     sum += diff * diff;
   }
   return sqrt(sum);
 }
 
-std::vector<double> linear_sim::average_position(
-    const std::vector<std::vector<double>> & states, size_t step)
+template <size_t n, size_t G>
+typename linear_sim<n, G>::Vector
+    linear_sim<n, G>::average_position(const RealType * __restrict__ states,
+                                       size_t step)
 {
-  size_t l = states.size();
-  if (0 == l) {
-    return std::vector<double>(l, 0);
-  }
-  size_t n = states[0].size();
-  std::vector<double> results(n, 0);
-  for (size_t t = step; t < l; ++t) {
-    std::vector<double> cur = states[t];
+  size_t l          = G - step + 1;
+  RealType divideBy = l;
+  Vector results{0};
+  for (size_t t = 0; t < l; ++t) {
+    const RealType * __restrict__ cur = states + t;
     for (size_t i = 0; i < n; ++i) {
-      results[i] += cur[i];
+      results[i] += cur[i] / divideBy;
     }
   }
-  return divide(results, l - step);
+  return results;
 }
 
-std::vector<double> linear_sim::divide(const std::vector<double> & v, double d)
+template <size_t n, size_t G>
+RealType linear_sim<n, G>::D(size_t i)
 {
-  size_t n = v.size();
-  std::vector<double> ret(n, 0);
-  for (size_t i = 0; i < n; ++i) {
-    ret[i] = v[i] / d;
-  }
-  return ret;
+  return D_cells[i];
 }
 
-double linear_sim::D(size_t i)
+template <size_t n, size_t G>
+RealType linear_sim<n, G>::W(size_t i, RealType j_c, size_t j)
 {
-  return params.D[i];
+  return W_cells[i * n + j] * j_c;
 }
 
-double linear_sim::W(size_t i, double j_c, size_t j)
+template <size_t n, size_t G>
+void linear_sim<n, G>::fill_states(RealType t_f)
 {
-  return params.W(i, j) * j_c;
-}
-
-std::vector<double> linear_sim::simulate(double t_f, size_t G, double epsilon)
-{
-  double delta = t_f / G;
-  size_t n = params.s_0.size();
-  std::vector<double> state(params.s_0);
-  std::vector<double> new_state(n);
-  std::vector<std::vector<double>> states;
-  {
-    /* find t_e, then s_e can be done without sweeping across vector again
-       since we're already holding the sum to find t_e */
-    size_t step;
-    double t;
-    for (step = 0, t = 0; step < G; ++step, t += delta) {
-      for (size_t i = 0; i < n; ++i) {
-        double sum_W = 0;
-        /* note: make sure this iterates across matrix in cache-friendly way */
-        for (size_t j = 0; j < n; ++j) {
-          sum_W += W(i, state[j], j);
-        }
-        new_state[i] += delta * (D(i) + sum_W);
+  RealType delta = t_f / G;
+  Vector state(s_0);
+  Vector new_state(s_0);
+  RealType * __restrict__ states_ptr = s_t.data();
+  memcpy(states_ptr, state.data(), VectorSize);
+  /* find t_e, then s_e can be done without sweeping across vector again
+     since we're already holding the sum to find t_e */
+  for (size_t step = 0; step < G; ++step) {
+    for (size_t i = 0; i < n; ++i) {
+      RealType sum_W = 0;
+      /* N.B.: make sure this iterates across matrix in cache-friendly way */
+      for (size_t j = 0; j < n; ++j) {
+        sum_W += W(i, state[j], j);
       }
-      std::swap(state, new_state);
-      states.push_back(state);
+      new_state[i] += delta * (D(i) + sum_W);
     }
+    state = new_state;
+    states_ptr += n;
+    memcpy(states_ptr, state.data(), VectorSize);
   }
-  /* now find s_e */
-  for (size_t t_e = 0; t_e < G; ++t_e) {
-    double cur_integral             = 0;
-    const std::vector<double> & s_e = states[t_e];
-    for (size_t t = t_e; t < G; ++t) {
-      double cur_diff = dist_euclid(s_e, states[t]);
+}
+
+template <size_t n, size_t G>
+size_t linear_sim<n, G>::t_e(RealType epsilon)
+{
+  const RealType * __restrict__ states_ptr = s_t.data();
+  for (size_t t_e = 0; t_e <= G; ++t_e) {
+    RealType cur_integral = 0;
+    const RealType * s_e = states_ptr + t_e;
+    for (size_t t = t_e + 1; t <= G; ++t) {
+      RealType cur_diff = dist_euclid(s_e, states_ptr + t);
       cur_integral += cur_diff;
       if (cur_integral >= epsilon) {
         break;
@@ -94,9 +86,23 @@ std::vector<double> linear_sim::simulate(double t_f, size_t G, double epsilon)
     if (cur_integral >= epsilon) {
       continue;
     } else {
-      return average_position(states, t_e);
+      return t_e;
     }
   }
-  throw std::runtime_error("should never get here!");
+  return G;
+}
+
+template <size_t n, size_t G>
+typename linear_sim<n, G>::Vector linear_sim<n, G>::s_e(size_t t)
+{
+  return average_position(s_t.data(), t);
+}
+
+template <size_t n, size_t G>
+typename linear_sim<n, G>::Vector linear_sim<n, G>::simulate(RealType t_f,
+                                                             RealType epsilon)
+{
+  fill_states(t_f);
+  return s_e(t_e(epsilon));
 }
 }

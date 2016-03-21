@@ -11,10 +11,15 @@ BIN := sim
 TEST_DIR := $(SRC_DIR)/test
 TEST_SRC := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OUT := $(TEST_SRC:%.cpp=%.o)
-TEST_HEADER := $(wildcard $(TEST_DIR)/*.hpp)
+TEST_HEADER := $(wildcard $(TEST_DIR)/*.hpp) $(wildcard $(TEST_DIR)/*.tpp)
 TEST_BIN := $(TEST_DIR)/test
 
-CFLAGS += -Wall -Wextra -Werror -std=c++17
+CFLAGS += -Wall -Wextra -Werror
+ifeq ($(CXX),g++)
+CFLAGS += -std=c++17
+else
+CFLAGS += -std=c++1z
+endif
 
 RELEASE ?= 0
 ifeq ($(RELEASE),0)
@@ -38,6 +43,9 @@ clean:
 
 test: $(TEST_BIN)
 	$(TEST_BIN)
+
+$(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_HEADER) $(HEADER) $(SRC)
+	$(CXX) -c $< -o $@ $(CFLAGS)
 
 $(TEST_BIN): $(TEST_OUT)
 	$(CXX) -o $@ $^ $(LFLAGS)
