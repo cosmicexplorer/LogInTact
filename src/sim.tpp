@@ -69,37 +69,40 @@ void linear_sim<n, G>::fill_states(RealType t_f)
   }
 }
 
+/* TODO: set failed if can't find good t_e! use gamma-ball */
 template <size_t n, size_t G>
-size_t linear_sim<n, G>::t_e(RealType epsilon)
+void linear_sim<n, G>::set_t_e(RealType epsilon)
 {
   const RealType * __restrict__ states_ptr = s_t.data();
-  for (size_t t_e = 0; t_e <= G; ++t_e, states_ptr += n) {
+  for (size_t cur_t_e = 0; cur_t_e <= G; ++cur_t_e, states_ptr += n) {
     RealType cur_integral             = 0;
-    size_t diff                       = G - t_e;
+    size_t diff                       = G - cur_t_e;
     const RealType * __restrict__ s_t = states_ptr + n;
     for (size_t t = 1; t <= diff && cur_integral < epsilon; ++t, s_t += n) {
       cur_integral += dist_euclid(states_ptr, s_t);
     }
     if (cur_integral < epsilon) {
-      return t_e;
+      t_e = cur_t_e;
+      return;
     } else {
       continue;
     }
   }
-  return G;
+  t_e = G;
+  return;
 }
 
 template <size_t n, size_t G>
-typename linear_sim<n, G>::Vector linear_sim<n, G>::s_e(size_t t)
+void linear_sim<n, G>::set_s_e(size_t t)
 {
-  return average_position(s_t.data(), t);
+  s_e = average_position(s_t.data(), t);
 }
 
 template <size_t n, size_t G>
-typename linear_sim<n, G>::Vector linear_sim<n, G>::simulate(RealType t_f,
-                                                             RealType epsilon)
+void linear_sim<n, G>::simulate(RealType t_f, RealType epsilon)
 {
   fill_states(t_f);
-  return s_e(t_e(epsilon));
+  set_t_e(epsilon);
+  set_s_e(t_e);
 }
 }

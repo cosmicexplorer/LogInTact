@@ -35,11 +35,13 @@ struct linear_sim {
   inline void fill_states(RealType);
   /* call these only after fill_states called! */
   /* returns index into s_t, NOT the actual time t_e */
-  inline size_t t_e(RealType);
-  inline Vector s_e(size_t);
-  /* returns s_e, mean of all points at t > t_e */
-  /* consider adding t_e to return value as well */
-  Vector simulate(RealType, RealType);
+  inline void set_t_e(RealType); /* may change failed */
+  inline void set_s_e(size_t);
+  size_t t_e;
+  Vector s_e;
+  bool failed = true;
+  /* finds s_e, mean of all points at t > t_e */
+  void simulate(RealType, RealType);
 };
 }
 

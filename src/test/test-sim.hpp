@@ -96,13 +96,15 @@ void TestT_E()
                  0, -.5,
                  /* t = 9 * delta */
                  0, 0};
-  size_t t_e = lin_sim.t_e(2.88);
+  lin_sim.set_t_e(2.88);
+  size_t t_e = lin_sim.t_e;
   if (t_e != 5) {
     throw test_failure("TestT_E (for t_e):\n" + std::to_string(t_e) +
                        "\ndoes not equal:\n" + std::to_string(5));
   }
   simulator::Vector expected_s_e{.17, -.05};
-  auto s_e          = lin_sim.s_e(t_e);
+  lin_sim.set_s_e(t_e);
+  auto s_e          = lin_sim.s_e;
   sim::RealType res = simulator::dist_euclid(expected_s_e.data(), s_e.data());
   if (res >= .05) {
     throw test_failure("TestT_E (for s_e):\n" + VectorString(expected_s_e) +
