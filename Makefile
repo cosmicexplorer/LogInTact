@@ -4,7 +4,7 @@ CXX := g++
 
 SRC_DIR := src
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
-HEADER := $(wildcard $(SRC_DIR)/*.hpp)
+HEADER := $(wildcard $(SRC_DIR)/*.hpp) $(wildcard $(SRC_DIR)/*.tpp)
 OUT := $(SRC:%.cpp=%.o)
 BIN := sim
 
