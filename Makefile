@@ -20,9 +20,12 @@ RELEASE ?= 0
 ifeq ($(RELEASE),0)
 CFLAGS += -O0 -ggdb
 else
-CFLAGS += -Ofast -march=native -funsafe-loop-optimizations \
-	-Wunsafe-loop-optimizations
-LFLAGS +=
+# consider adding -funsafe-loop-optimizations, -Wunsafe-loop-optimizations,
+# -Wunknown-pragmas for more speed
+# gcc has a bug with recognizing diagnostics changes, so we'd have to turn on
+# -Wno-unknown-pragmas
+CFLAGS += -Ofast -march=native -flto
+LFLAGS += $(CFLAGS) -fwhole-program
 endif
 
 all: $(BIN)
@@ -30,6 +33,8 @@ all: $(BIN)
 clean:
 	rm -f $(BIN)
 	rm -f $(OUT)
+	rm -f $(TEST_BIN)
+	rm -f $(TEST_OUT)
 
 test: $(TEST_BIN)
 	$(TEST_BIN)
