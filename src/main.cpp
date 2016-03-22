@@ -1,6 +1,8 @@
 #include <iostream>
+#include <atomic>
+#include <csignal>
 
-#include "sample.hpp"
+#include "io.hpp"
 
 /* checkout branch old-generic for how we were going to make this a little more
    generic with respect to linear/nonlinear systems before we went ham on
@@ -20,6 +22,13 @@ std::string PrintVect(const Vect & v)
          "]";
 }
 
+std::atomic<bool> terminate(false);
+
+void catch_sigint(int)
+{
+  terminate.store(true);
+}
+
 int main()
 {
   using ri     = sample::real_interval;
@@ -36,14 +45,11 @@ int main()
       int_rm{ri{0, 1}, ri{0, 1}, ri{0, 1}, ri{0, 1}, ri{0, 1}, ri{0, 1},
              ri{0, 1}, ri{0, 1}, ri{0, 1}});
   constexpr size_t chunk = 5;
-  sample::do_simulated_sample<3, 50, chunk>(
-      3, .3, ints, [&](const auto & results) {
-        for (size_t i = 0; i < results.size(); ++i) {
-          const sim::linear_sim<3, 50> & cur = results[i].lsim;
-          if (!cur.failed) {
-            std::cout << PrintVect(cur.s_e) << std::endl;
-          }
-        }
-        return false;
-      });
+  io::async_out_handle<3, 50, chunk> handle("outfile.out");
+  signal(SIGINT, catch_sigint);
+  sample::do_simulated_sample<3, 50, chunk>(3, .3, ints,
+                                            handle.get_async_io_fun([&]() {
+                                              return true;
+                                              /* return terminate.load(); */
+                                            }));
 }

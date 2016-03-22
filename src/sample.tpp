@@ -18,10 +18,7 @@ sim_param_intervals<n>::sim_param_intervals(std::array<real_interval, n> s_0,
   }
 }
 
-template <size_t n,
-          size_t G,
-          size_t CHUNK_SIZE = DEFAULT_CHUNK_SIZE,
-          typename Func>
+template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
 void do_simulated_sample(sim::RealType t_f,
                          sim::RealType epsilon,
                          sim_param_intervals<n> & ints,
