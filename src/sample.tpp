@@ -13,7 +13,7 @@ sim_param_intervals<n>::sim_param_intervals(std::array<real_interval, n> s_0,
     D_range[i].param({D[i].begin, D[i].end});
   }
   for (size_t j = 0; j < n * n; ++j) {
-    W_range[i].param({W[j].begin, W[j].end});
+    W_range[j].param({W[j].begin, W[j].end});
   }
 }
 
@@ -25,7 +25,7 @@ void do_simulated_sample(
     const std::function<bool(const linear_sim_result<n, G> * const, size_t)> &
         process_chunk)
 {
-  using lsim                     = typename linear_sim_result<n, G>;
+  using lsim                     = linear_sim_result<n, G>;
   std::unique_ptr<lsim[]> arrays = std::make_unique<lsim[]>(CHUNK_SIZE);
   std::random_device rd;
   std::mt19937 mtrng(rd());

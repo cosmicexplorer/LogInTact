@@ -34,16 +34,14 @@ struct linear_sim_result {
   size_t num_times_within_ball = 0;
 };
 
-constexpr size_t DEFAULT_CHUNK_SIZE             = 100;
+constexpr size_t DEFAULT_CHUNK_SIZE             = 5e4;
 template <size_t n, size_t G, size_t CHUNK_SIZE = DEFAULT_CHUNK_SIZE>
 void do_simulated_sample(
     sim::RealType,
     sim::RealType,
     const sim_param_intervals<n> &,
     /* if returns false, stop iterating */
-    const std::function<bool(const linear_sim_result<n, G> * const,
-                             CHUNK_SIZE)> &);
-}
+    const std::function<bool(const linear_sim_result<n, G> * const, size_t)> &);
 
 template <size_t n, size_t G, size_t CHUNK_SIZE>
 void setup_initial_samples(const linear_sim_result<n, G> * const,
@@ -54,6 +52,7 @@ template <size_t n, size_t G, size_t CHUNK_SIZE>
 void setup_new_samples(const linear_sim_result<n, G> * const,
                        const sim_param_intervals<n> &,
                        std::uniform_real_distribution<sim::RealType> &);
+}
 
 #include "sample.tpp"
 

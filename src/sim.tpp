@@ -73,6 +73,8 @@ void linear_sim<n, G>::fill_states(RealType t_f)
 template <size_t n, size_t G>
 void linear_sim<n, G>::set_t_e(RealType epsilon)
 {
+  /* FIXME: only do this if doesn't fail!!! */
+  failed = false;
   const RealType * __restrict__ states_ptr = s_t.data();
   for (size_t cur_t_e = 0; cur_t_e <= G; ++cur_t_e, states_ptr += n) {
     RealType cur_integral             = 0;
