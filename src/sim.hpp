@@ -13,7 +13,7 @@ struct dimension_exception : std::runtime_error {
   }
 };
 
-typedef double RealType;
+typedef float RealType;
 
 template <size_t n, size_t G>
 struct linear_sim {
