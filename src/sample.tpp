@@ -27,60 +27,29 @@ void do_simulated_sample(sim::RealType t_f,
                          sim_param_intervals<n> & ints,
                          Func process_chunk)
 {
-  using lsim_arr = std::array<linear_sim_result<n, G>, CHUNK_SIZE>;
-  std::unique_ptr<lsim_arr> arrays(
-      new std::array<linear_sim_result<n, G>, CHUNK_SIZE>);
+  using lsimr_arr = std::array<linear_sim_result<n, G>, CHUNK_SIZE>;
+  std::unique_ptr<lsimr_arr> arrays(new lsimr_arr);
+  lsimr_arr & chunk = *arrays.get();
   std::random_device rd;
   std::mt19937 mtrng(rd());
-  setup_initial_samples<n, G, CHUNK_SIZE>(*arrays.get(), ints, mtrng);
   do {
+    setup_samples<n, G, CHUNK_SIZE>(chunk, ints, mtrng);
     /* TODO: parallelize this part */
     for (size_t i = 0; i < CHUNK_SIZE; ++i) {
-      sim::linear_sim<n, G> & cur = (*arrays.get())[i].lsim;
+      sim::linear_sim<n, G> & cur = chunk[i].lsim;
       cur.simulate(t_f, epsilon);
     }
-    setup_new_samples<n, G, CHUNK_SIZE>(*arrays.get(), ints, mtrng);
-  } while (process_chunk(*arrays.get()));
+  } while (process_chunk(chunk));
 }
 
 template <size_t n, size_t G, size_t CHUNK_SIZE>
-void setup_initial_samples(
-    std::array<linear_sim_result<n, G>, CHUNK_SIZE> & samples,
-    sim_param_intervals<n> & ints,
-    std::mt19937 & rng)
+void setup_samples(std::array<linear_sim_result<n, G>, CHUNK_SIZE> & samples,
+                   sim_param_intervals<n> & ints,
+                   std::mt19937 & rng)
 {
   for (size_t i = 0; i < CHUNK_SIZE; ++i) {
     linear_sim_result<n, G> & cur   = samples[i];
     cur.num_times_within_ball       = 0;
-    sim::linear_sim<n, G> & cur_sim = cur.lsim;
-    auto & cur_s_0                  = cur_sim.s_0;
-    auto & cur_s_0_range = ints.s_0_range;
-    for (size_t s_0_index = 0; s_0_index < n; ++s_0_index) {
-      cur_s_0[s_0_index] = cur_s_0_range[s_0_index](rng);
-    }
-    auto & cur_D       = cur_sim.D_cells;
-    auto & cur_D_range = ints.D_range;
-    for (size_t D_index = 0; D_index < n; ++D_index) {
-      cur_D[D_index] = cur_D_range[D_index](rng);
-    }
-    auto & cur_W       = cur_sim.W_cells;
-    auto & cur_W_range = ints.W_range;
-    for (size_t W_index = 0; W_index < n * n; ++W_index) {
-      cur_W[W_index] = cur_W_range[W_index](rng);
-    }
-  }
-}
-
-/* TODO: perform the random sampling algorithm using failure and
-   num_times_within_ball as discussed */
-template <size_t n, size_t G, size_t CHUNK_SIZE>
-void setup_new_samples(
-    std::array<linear_sim_result<n, G>, CHUNK_SIZE> & samples,
-    sim_param_intervals<n> & ints,
-    std::mt19937 & rng)
-{
-  for (size_t i = 0; i < CHUNK_SIZE; ++i) {
-    linear_sim_result<n, G> & cur   = samples[i];
     sim::linear_sim<n, G> & cur_sim = cur.lsim;
     auto & cur_s_0                  = cur_sim.s_0;
     auto & cur_s_0_range = ints.s_0_range;

@@ -20,11 +20,6 @@ std::string PrintVect(const Vect & v)
          "]";
 }
 
-/* define input of system <s_0, D, W> */
-/* simulate with granularity G up to timestep t_f */
-/* dump to some file */
-/* ??? */
-/* $$$ */
 int main()
 {
   using ri     = sample::real_interval;

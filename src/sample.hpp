@@ -34,6 +34,8 @@ struct linear_sim_result {
   size_t num_times_within_ball = 0;
 };
 
+/* note that Func is performed synchronously! check out io.hpp for "async"
+   output to file */
 constexpr size_t DEFAULT_CHUNK_SIZE = 5e4;
 template <size_t n,
           size_t G,
@@ -46,14 +48,9 @@ void do_simulated_sample(sim::RealType,
                          Func);
 
 template <size_t n, size_t G, size_t CHUNK_SIZE>
-void setup_initial_samples(std::array<linear_sim_result<n, G>, CHUNK_SIZE> &,
-                           sim_param_intervals<n> &,
-                           std::mt19937 &);
-
-template <size_t n, size_t G, size_t CHUNK_SIZE>
-void setup_new_samples(std::array<linear_sim_result<n, G>, CHUNK_SIZE> &,
-                       sim_param_intervals<n> &,
-                       std::mt19937 &);
+void setup_samples(std::array<linear_sim_result<n, G>, CHUNK_SIZE> &,
+                   sim_param_intervals<n> &,
+                   std::mt19937 &);
 }
 
 #include "sample.tpp"

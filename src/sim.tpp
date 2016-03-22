@@ -33,13 +33,13 @@ typename linear_sim<n, G>::Vector
 }
 
 template <size_t n, size_t G>
-RealType linear_sim<n, G>::D(size_t i)
+RealType linear_sim<n, G>::D(size_t i) const
 {
   return D_cells[i];
 }
 
 template <size_t n, size_t G>
-RealType linear_sim<n, G>::W(size_t i, RealType j_c, size_t j)
+RealType linear_sim<n, G>::W(size_t i, RealType j_c, size_t j) const
 {
   return W_cells[i * n + j] * j_c;
 }

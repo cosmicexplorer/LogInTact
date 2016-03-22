@@ -30,8 +30,8 @@ struct linear_sim {
   /* n.b.: don't screw up the indexing here! */
   inline static Vector average_position(const RealType *, size_t);
 
-  inline RealType D(size_t);
-  inline RealType W(size_t, RealType, size_t);
+  inline RealType D(size_t) const;
+  inline RealType W(size_t, RealType, size_t) const;
   inline void fill_states(RealType);
   /* call these only after fill_states called! */
   /* returns index into s_t, NOT the actual time t_e */
