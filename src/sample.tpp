@@ -34,6 +34,7 @@ void do_simulated_sample(sim::RealType t_f,
   std::mt19937 mtrng(rd());
   setup_initial_samples<n, G, CHUNK_SIZE>(*arrays.get(), ints, mtrng);
   do {
+    /* TODO: parallelize this part */
     for (size_t i = 0; i < CHUNK_SIZE; ++i) {
       sim::linear_sim<n, G> & cur = (*arrays.get())[i].lsim;
       cur.simulate(t_f, epsilon);
@@ -70,6 +71,8 @@ void setup_initial_samples(
   }
 }
 
+/* TODO: perform the random sampling algorithm using failure and
+   num_times_within_ball as discussed */
 template <size_t n, size_t G, size_t CHUNK_SIZE>
 void setup_new_samples(
     std::array<linear_sim_result<n, G>, CHUNK_SIZE> & samples,

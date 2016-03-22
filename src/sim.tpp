@@ -50,8 +50,9 @@ void linear_sim<n, G>::fill_states(RealType t_f)
   RealType delta = t_f / G;
   Vector state(s_0);
   Vector new_state(s_0);
-  RealType * __restrict__ states_ptr = s_t.data();
-  memcpy(states_ptr, state.data(), VectorSize);
+  RealType * __restrict__ states_ptr       = s_t.data();
+  RealType * __restrict__ state_single_ptr = state.data();
+  memcpy(states_ptr, state_single_ptr, VectorSize);
   /* find t_e, then s_e can be done without sweeping across vector again
      since we're already holding the sum to find t_e */
   for (size_t step = 0; step < G; ++step) {
@@ -65,7 +66,7 @@ void linear_sim<n, G>::fill_states(RealType t_f)
     }
     state = new_state;
     states_ptr += n;
-    memcpy(states_ptr, state.data(), VectorSize);
+    memcpy(states_ptr, state_single_ptr, VectorSize);
   }
 }
 
@@ -74,7 +75,7 @@ template <size_t n, size_t G>
 void linear_sim<n, G>::set_t_e(RealType epsilon)
 {
   /* FIXME: only do this if doesn't fail!!! */
-  failed = false;
+  failed                                   = false;
   const RealType * __restrict__ states_ptr = s_t.data();
   for (size_t cur_t_e = 0; cur_t_e <= G; ++cur_t_e, states_ptr += n) {
     RealType cur_integral             = 0;
