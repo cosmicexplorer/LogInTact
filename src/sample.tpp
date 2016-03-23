@@ -21,10 +21,11 @@ sim_param_intervals<n>::sim_param_intervals(std::array<real_interval, n> s_0,
 template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
 void do_simulated_sample(sim::RealType t_f,
                          sim::RealType epsilon,
-                         sim_param_intervals<n> & ints,
+                         const sim_param_intervals<n> & ints_other,
                          Func process_chunk)
 {
   using lsimr_arr = std::array<sim::linear_sim<n, G>, CHUNK_SIZE>;
+  sim_param_intervals<n> ints(ints_other); /* copy over */
   std::unique_ptr<lsimr_arr> arrays(new lsimr_arr);
   lsimr_arr & chunk = *arrays.get();
   std::random_device rd;

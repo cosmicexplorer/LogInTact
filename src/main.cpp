@@ -1,12 +1,6 @@
 #include <iostream>
 #include <atomic>
 #include <csignal>
-#include <climits>
-
-/* linux */
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 
 #include "io.hpp"
 
@@ -53,63 +47,12 @@ int main()
              ri{0, 1}, ri{0, 1}, ri{0, 1}});
   constexpr size_t chunk = 5;
   /* TODO: read intervals from file, get output file from argv */
-  int pipe_fds[2];
-  pipe(pipe_fds);
-  pid_t pid = fork();
-  if (-1 == pid) {
-    /* TODO: error handling */
-  } else if (pid) { /* is parent */
-    close(pipe_fds[0]);
-    signal(SIGINT, catch_sigint);
-    /* TODO: catch SIGCHLD */
-    size_t num_chunks = 0;
-    sample::do_simulated_sample<3, 5, chunk>(
-        3, .3, ints, [&](const std::array<res, chunk> & results) {
-          constexpr size_t num_bytes = sizeof(res) * results.size();
-          const res * results_ptr    = results.data();
-          ssize_t written_bytes = write(pipe_fds[1], results_ptr, num_bytes);
-          if (-1 == written_bytes) {
-            std::cerr << "no write" << std::endl;
-            exit(1);
-            /* TODO: error handling */
-          } else if (num_bytes != written_bytes) {
-            std::cerr << "WEIRD" << std::endl;
-            exit(1);
-            /* TODO: error handling */
-          }
-          std::cerr << "here!" << std::endl;
-          ++num_chunks;
-          return num_chunks < 5;
-          /* return terminate.load(); */
-        });
-    /* TODO: add some sort of speed testing for optimal chunk size */
-    close(pipe_fds[1]);
-    waitpid(pid, nullptr, 0);
-  } else { /* is child */
-    close(pipe_fds[1]);
-    std::unique_ptr<res[]> arr(new res[chunk]);
-    FILE * out                = io::open_writex_or_except("outfile.out");
-    constexpr size_t expected = sizeof(res) * chunk;
-    static_assert(expected <= SSIZE_MAX, "undefined");
-    while (true) {
-      ssize_t read_bytes = read(pipe_fds[0], arr.get(), expected);
-      if (-1 == read_bytes) {
-        std::cerr << "help: " << std::strerror(errno) << std::endl;
-        break;
-        /* TODO: error handling */
-      } else if (expected != read_bytes) {
-        std::cerr << "weird: " << read_bytes << std::endl;
-        break;
-        /* TODO: error handling */
-      }
-      size_t written_num = fwrite(arr.get(), sizeof(res), chunk, out);
-      if (expected != (written_num * sizeof(res))) {
-        std::cerr << "weird2: " << written_num * sizeof(res) << std::endl;
-        return -1;
-        /* TODO: error handling */
-      }
-    }
-    close(pipe_fds[0]);
-    fclose(out);
-  }
+  size_t num_chunks = 0;
+  signal(SIGINT, catch_sigint);
+  /* TODO: catch SIGCHLD */
+  io::run_sim_async<3, 5, chunk>(3, .3, ints, [&]() {
+    ++num_chunks;
+    return num_chunks < 5;
+    /* return terminate.load(); */
+  });
 }
