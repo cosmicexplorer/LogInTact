@@ -1,5 +1,7 @@
 #include <memory>
 
+namespace LogInTact
+{
 namespace sample
 {
 template <size_t n>
@@ -66,5 +68,6 @@ void setup_samples(std::array<sim::linear_sim<n, G>, CHUNK_SIZE> & samples,
       cur_W[W_index] = cur_W_range[W_index](rng);
     }
   }
+}
 }
 }

@@ -1,9 +1,11 @@
-#ifndef ___SAMPLE_HPP___
-#define ___SAMPLE_HPP___
+#ifndef ___LOGINTACT_SAMPLE_HPP___
+#define ___LOGINTACT_SAMPLE_HPP___
 
 #include "sim.hpp"
 #include <random>
 
+namespace LogInTact
+{
 namespace sample
 {
 struct real_interval {
@@ -46,7 +48,8 @@ void setup_samples(std::array<sim::linear_sim<n, G>, CHUNK_SIZE> &,
                    sim_param_intervals<n> &,
                    std::mt19937 &);
 }
+}
 
 #include "sample.tpp"
 
-#endif /* ___SAMPLE_HPP___ */
+#endif /* ___LOGINTACT_SAMPLE_HPP___ */

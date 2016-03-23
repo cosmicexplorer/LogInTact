@@ -1,6 +1,8 @@
 #include <cmath>
 #include <cstring>
 
+namespace LogInTact
+{
 namespace sim
 {
 template <size_t n, size_t G>
@@ -58,7 +60,7 @@ void linear_sim<n, G>::fill_states(RealType t_f)
   for (size_t step = 0; step < G; ++step) {
     for (size_t i = 0; i < n; ++i) {
       RealType sum_W = 0;
-      /* N.B.: make sure this iterates across matrix in cache-friendly way */
+      /* NOTE: make sure this iterates across matrix in cache-friendly way */
       for (size_t j = 0; j < n; ++j) {
         sum_W += W(i, state[j], j);
       }
@@ -107,5 +109,6 @@ void linear_sim<n, G>::simulate(RealType t_f, RealType epsilon)
   fill_states(t_f);
   set_t_e(epsilon);
   set_s_e(t_e);
+}
 }
 }

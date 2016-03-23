@@ -8,6 +8,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+namespace LogInTact
+{
 namespace io
 {
 FILE * open_writex_or_except(std::string path)
@@ -138,5 +140,6 @@ void consumer_process(int read_pipe, FILE * handle)
       throw io_exception("write to child file of unexpected length");
     }
   }
+}
 }
 }

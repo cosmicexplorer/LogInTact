@@ -1,8 +1,10 @@
-#ifndef ___SIM_HPP___
-#define ___SIM_HPP___
+#ifndef ___LOGINTACT_SIM_HPP___
+#define ___LOGINTACT_SIM_HPP___
 
 #include <functional>
 
+namespace LogInTact
+{
 namespace sim
 {
 /* throw this if the dimensions don't work out */
@@ -26,7 +28,7 @@ struct linear_sim {
   StateCells s_t;
 
   inline static RealType dist_euclid(const RealType *, const RealType *);
-  /* n.b.: don't screw up the indexing here! */
+  /* NOTE: don't screw up the indexing here! */
   inline static Vector average_position(const RealType *, size_t);
 
   inline RealType D(size_t) const;
@@ -43,7 +45,8 @@ struct linear_sim {
   void simulate(RealType, RealType);
 };
 }
+}
 
 #include "sim.tpp"
 
-#endif /* ___SIM_HPP___ */
+#endif /* ___LOGINTACT_SIM_HPP___ */

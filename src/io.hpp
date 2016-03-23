@@ -1,9 +1,10 @@
-#ifndef ___IO_HPP___
-#define ___IO_HPP___
-/* TODO: prefix all #ifndef guards! */
+#ifndef ___LOGINTACT_IO_HPP___
+#define ___LOGINTACT_IO_HPP___
 
 #include "sample.hpp"
 
+namespace LogInTact
+{
 namespace io
 {
 struct io_exception : std::runtime_error {
@@ -45,7 +46,8 @@ void producer_process(sim::RealType,
 template <size_t n, size_t G, size_t CHUNK_SIZE>
 void consumer_process(int, FILE *);
 }
+}
 
 #include "io.tpp"
 
-#endif /* ___IO_HPP___ */
+#endif /* ___LOGINTACT_IO_HPP___ */
