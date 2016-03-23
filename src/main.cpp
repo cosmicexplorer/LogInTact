@@ -1,12 +1,8 @@
+#include "io.hpp"
+
 #include <iostream>
 #include <atomic>
 #include <csignal>
-
-#include "io.hpp"
-
-/* checkout branch old-generic for how we were going to make this a little more
-   generic with respect to linear/nonlinear systems before we went ham on
-   performance */
 
 template <typename Vect>
 std::string PrintVect(const Vect & v)
@@ -35,8 +31,9 @@ int main()
   using res    = sim::linear_sim<3, 5>;
   using int_rv = std::array<ri, 3>;
   using int_rm = std::array<ri, 9>;
-  std::cout << sizeof(res) << std::endl;
-  std::cout << static_cast<double>(5e4 * sizeof(res)) / 1e6 << std::endl;
+  std::cout << sizeof(res) << " bytes" << std::endl;
+  std::cout << static_cast<double>(5e4 * sizeof(res)) / 1e6 << " MB"
+            << std::endl;
   sample::sim_param_intervals<3> ints(
       /* s_0 */
       int_rv{ri{0, 1}, ri{0, 1}, ri{0, 1}},
@@ -49,10 +46,13 @@ int main()
   /* TODO: read intervals from file, get output file from argv */
   size_t num_chunks = 0;
   signal(SIGINT, catch_sigint);
-  /* TODO: catch SIGCHLD */
-  io::run_sim_async<3, 5, chunk>(3, .3, ints, [&]() {
-    ++num_chunks;
-    return num_chunks < 5;
-    /* return terminate.load(); */
-  });
+  try {
+    io::run_sim_async<3, 5, chunk>(3, .3, ints, "outfile.out", [&]() {
+      ++num_chunks;
+      return num_chunks < 5 or terminate.load();
+    });
+  } catch (io::io_exception & e) {
+    std::cerr << e.what() << std::endl;
+    exit(EXIT_FAILURE);
+  }
 }

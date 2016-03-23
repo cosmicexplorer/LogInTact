@@ -1,6 +1,9 @@
 #include <fstream>
 #include <climits>
+#include <iostream>
+#include <csignal>
 
+/* linux */
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -48,66 +51,91 @@ template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
 void run_sim_async(sim::RealType t_f,
                    sim::RealType epsilon,
                    const sample::sim_param_intervals<n> & intervals,
+                   std::string outfile,
                    Func f)
 {
-  using simu = sim::linear_sim<n, G>;
   int pipe_fds[2];
   pipe(pipe_fds);
   pid_t pid = fork();
   if (-1 == pid) {
-    /* TODO: error handling */
+    throw io_exception("fork could not complete");
   } else if (pid) { /* is parent */
     close(pipe_fds[0]);
-    auto cleanup __attribute__((unused)) = run_except_safe([&]() {
-      close(pipe_fds[1]);
-      waitpid(pid, nullptr, 0);
-    });
-    sample::do_simulated_sample<n, G, CHUNK_SIZE>(
-        t_f, epsilon, intervals,
-        [&](const std::array<simu, CHUNK_SIZE> & results) {
-          constexpr size_t num_bytes = sizeof(simu) * results.size();
-          const simu * results_ptr   = results.data();
-          ssize_t written_bytes = write(pipe_fds[1], results_ptr, num_bytes);
-          if (-1 == written_bytes) {
-            std::cerr << "no write" << std::endl;
-            exit(1);
-            /* TODO: error handling */
-          } else if (num_bytes != written_bytes) {
-            std::cerr << "WEIRD" << std::endl;
-            exit(1);
-            /* TODO: error handling */
-          }
-          std::cerr << "here!" << std::endl;
-          return f();
-        });
+    signal(SIGCHLD, SIG_IGN);
+    producer_process<n, G, CHUNK_SIZE, Func>(t_f, epsilon, pipe_fds[1],
+                                             intervals, f);
+    close(pipe_fds[1]);
+    int status;
+    waitpid(pid, &status, 0);
+    if (!WIFEXITED(status) or WEXITSTATUS(status) != EXIT_SUCCESS) {
+      throw io_exception(
+          std::string("child exited with status " + std::to_string(status)));
+    }
     /* TODO: add some sort of speed testing for optimal chunk size */
   } else { /* is child */
-    close(pipe_fds[1]);
-    std::unique_ptr<simu[]> arr(new simu[CHUNK_SIZE]);
-    FILE * out                = open_writex_or_except("outfile.out");
-    constexpr size_t expected = sizeof(simu) * CHUNK_SIZE;
-    static_assert(expected <= SSIZE_MAX, "undefined");
-    auto cleanup __attribute__((unused)) = run_except_safe([&]() {
-      close(pipe_fds[0]);
-      fclose(out);
-    });
-    while (true) {
-      ssize_t read_bytes = read(pipe_fds[0], arr.get(), expected);
-      if (-1 == read_bytes) {
-        std::cerr << "help: " << std::strerror(errno) << std::endl;
-        exit(1);
-        /* TODO: error handling */
-      } else if (expected != read_bytes) {
-        std::cerr << "weird: " << read_bytes << std::endl;
-        exit(0);
-        /* TODO: error handling */
-      }
-      size_t written_num = fwrite(arr.get(), sizeof(simu), CHUNK_SIZE, out);
-      if (expected != (written_num * sizeof(simu))) {
-        std::cerr << "weird2: " << written_num * sizeof(simu) << std::endl;
-        exit(1);
-        /* TODO: error handling */
-      }
+    try {
+      close(pipe_fds[1]);
+      FILE * out;
+      auto cleanup __attribute__((unused)) = run_except_safe([&]() {
+        close(pipe_fds[0]);
+        if (out) {
+          fclose(out);
+        }
+      });
+      out = open_writex_or_except(outfile);
+      consumer_process<n, G, CHUNK_SIZE>(pipe_fds[0], out);
+    } catch (io_exception & e) {
+      std::cerr << e.what() << std::endl;
+      _Exit(EXIT_FAILURE);
+    }
+    _Exit(EXIT_SUCCESS);
+  }
+}
+
+template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
+void producer_process(sim::RealType t_f,
+                      sim::RealType epsilon,
+                      int write_pipe,
+                      const sample::sim_param_intervals<n> & intervals,
+                      Func f)
+{
+  using simu = sim::linear_sim<n, G>;
+  sample::do_simulated_sample<n, G, CHUNK_SIZE>(
+      t_f, epsilon, intervals,
+      [&](const std::array<simu, CHUNK_SIZE> & results) {
+        constexpr size_t num_bytes = sizeof(simu) * results.size();
+        static_assert(num_bytes <= SSIZE_MAX, "undefined");
+        const simu * results_ptr = results.data();
+        ssize_t written_bytes = write(write_pipe, results_ptr, num_bytes);
+        if (-1 == written_bytes) {
+          throw io_exception("failed write to parent pipe");
+        } else if (num_bytes != written_bytes) {
+          throw io_exception("write of different size to parent pipe");
+        }
+        std::cerr << "here!" << std::endl;
+        return f();
+      });
+}
+
+template <size_t n, size_t G, size_t CHUNK_SIZE>
+void consumer_process(int read_pipe, FILE * handle)
+{
+  using simu = sim::linear_sim<n, G>;
+  std::unique_ptr<simu[]> arr(new simu[CHUNK_SIZE]);
+  constexpr size_t expected = sizeof(simu) * CHUNK_SIZE;
+  static_assert(expected <= SSIZE_MAX, "undefined");
+  static_assert(expected != 0, "no empty reads");
+  while (true) {
+    ssize_t read_bytes = read(read_pipe, arr.get(), expected);
+    if (-1 == read_bytes) {
+      throw io_exception(std::string("can't read from child pipe: ") +
+                         strerror(errno));
+    } else if (0 == read_bytes) { /* pipe closed */
+      return;
+    }
+    size_t written_bytes = fwrite(arr.get(), 1, read_bytes, handle);
+    if (static_cast<size_t>(read_bytes) != written_bytes) {
+      throw io_exception("write to child file of unexpected length");
     }
   }
 }

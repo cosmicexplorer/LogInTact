@@ -32,7 +32,18 @@ template <size_t n,
 void run_sim_async(sim::RealType,
                    sim::RealType,
                    const sample::sim_param_intervals<n> &,
+                   std::string,
                    Func);
+
+template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
+void producer_process(sim::RealType,
+                      sim::RealType,
+                      int,
+                      const sample::sim_param_intervals<n> &,
+                      Func);
+
+template <size_t n, size_t G, size_t CHUNK_SIZE>
+void consumer_process(int, FILE *);
 }
 
 #include "io.tpp"
