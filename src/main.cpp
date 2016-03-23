@@ -82,6 +82,7 @@ int main()
           return num_chunks < 5;
           /* return terminate.load(); */
         });
+    /* TODO: add some sort of speed testing for optimal chunk size */
     close(pipe_fds[1]);
     waitpid(pid, nullptr, 0);
   } else { /* is child */

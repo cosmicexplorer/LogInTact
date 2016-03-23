@@ -14,8 +14,7 @@ TEST_OUT := $(TEST_SRC:%.cpp=%.o)
 TEST_HEADER := $(wildcard $(TEST_DIR)/*.hpp) $(wildcard $(TEST_DIR)/*.tpp)
 TEST_BIN := $(TEST_DIR)/test
 
-CFLAGS += -Wall -Wextra -Werror -pthread
-LFLAGS += -pthread
+CFLAGS += -Wall -Wextra -Werror
 ifeq ($(CXX),g++)
 CFLAGS += -std=c++17
 else
