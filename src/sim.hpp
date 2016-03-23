@@ -1,7 +1,6 @@
 #ifndef ___SIM_HPP___
 #define ___SIM_HPP___
 
-#include <vector>
 #include <functional>
 
 namespace sim

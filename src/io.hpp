@@ -3,7 +3,6 @@
 /* TODO: prefix all #ifndef guards! */
 
 #include "sample.hpp"
-#include <cstdio>
 
 namespace io
 {
