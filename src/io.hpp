@@ -16,21 +16,20 @@ struct io_exception : std::runtime_error {
   }
 };
 
-FILE * open_or_except(std::string, std::string);
+FILE * open_writex_or_except(std::string);
 
 template <size_t n, size_t G, size_t CHUNK_SIZE = sample::DEFAULT_CHUNK_SIZE>
 struct async_out_handle {
   async_out_handle(std::string);
   ~async_out_handle();
 
-  typedef std::array<sample::linear_sim_result<n, G>, CHUNK_SIZE> lsimr_arr;
+  typedef std::array<sim::linear_sim<n, G>, CHUNK_SIZE> lsimr_arr;
   typedef const lsimr_arr & const_lsimr_arr;
   typedef std::function<bool(const_lsimr_arr)> process_fun;
 
   /* Func tells it whether to quit or not */
   template <typename Func>
   inline process_fun get_async_io_fun(Func);
-  void turn_off();
 
 private:
   volatile bool ready;
