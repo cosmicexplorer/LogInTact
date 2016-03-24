@@ -32,16 +32,33 @@ void do_simulated_sample(sim::RealType t_f,
   lsimr_arr & chunk = *arrays.get();
   std::random_device rd;
   std::mt19937 mtrng(rd());
-  /* TODO: add compute_setup */
+/* setup parallel compute methods */
+#if SIM_METHOD == SIM_USE_OPENMP
+#elif SIM_METHOD == SIM_USE_OPENCL
+#else
+#endif
   do {
     setup_samples<n, G, CHUNK_SIZE>(chunk, ints, mtrng);
-    /* TODO: parallelize this part */
+/* perform parallel computation */
+#if SIM_METHOD == SIM_USE_OPENMP
+#pragma omp parallel for schedule(static)
     for (size_t i = 0; i < CHUNK_SIZE; ++i) {
       sim::linear_sim<n, G> & cur = chunk[i];
       cur.simulate(t_f, epsilon);
     }
+#elif SIM_METHOD == SIM_USE_OPENCL
+#else
+    for (size_t i = 0; i < CHUNK_SIZE; ++i) {
+      sim::linear_sim<n, G> & cur = chunk[i];
+      cur.simulate(t_f, epsilon);
+    }
+#endif
   } while (process_chunk(chunk));
-  /* TODO: add compute_teardown */
+/* cleanup parallel computation */
+#if SIM_METHOD == SIM_USE_OPENMP
+#elif SIM_METHOD == SIM_USE_OPENCL
+#else
+#endif
 }
 
 template <size_t n, size_t G, size_t CHUNK_SIZE>

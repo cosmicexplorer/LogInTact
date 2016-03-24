@@ -43,6 +43,9 @@ void do_simulated_sample(sim::RealType,
                          /* if returns false, stop iterating */
                          Func);
 
+#define SIM_USE_OPENMP 1
+#define SIM_USE_OPENCL 2
+
 template <size_t n, size_t G, size_t CHUNK_SIZE>
 void setup_samples(std::array<sim::linear_sim<n, G>, CHUNK_SIZE> &,
                    sim_param_intervals<n> &,

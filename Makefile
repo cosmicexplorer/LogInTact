@@ -1,4 +1,4 @@
-.PHONY: all clean test
+.PHONY: all clean test openmp
 
 CXX := g++
 
@@ -30,10 +30,14 @@ else
 # gcc has a bug with recognizing diagnostics changes, so we'd have to turn on
 # -Wno-unknown-pragmas
 CFLAGS += -Ofast -march=native -flto
-LFLAGS += $(CFLAGS) -fwhole-program
+LDFLAGS += $(CFLAGS) -fwhole-program
 endif
 
 all: $(BIN)
+
+openmp: CFLAGS += -DSIM_METHOD=SIM_USE_OPENMP -fopenmp
+openmp: LDFLAGS += -fopenmp
+openmp: | clean all
 
 clean:
 	rm -f $(BIN)
@@ -48,10 +52,10 @@ $(TEST_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_HEADER) $(HEADER) $(SRC)
 	$(CXX) -c $< -o $@ $(CFLAGS)
 
 $(TEST_BIN): $(TEST_OUT)
-	$(CXX) -o $@ $^ $(LFLAGS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 %.o: %.cpp $(HEADER)
 	$(CXX) -c $< -o $@ $(CFLAGS)
 
 $(BIN): $(OUT)
-	$(CXX) -o $@ $^ $(LFLAGS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
