@@ -4,3 +4,5 @@
 *.log
 *.out
 sim
+!bench.out
+bench-*

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "test-sim.hpp"
+#include "test-sim.tpp"
 
 int main()
 {

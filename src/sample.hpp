@@ -39,6 +39,7 @@ template <size_t n,
           typename Func>
 void do_simulated_sample(sim::RealType,
                          sim::RealType,
+                         size_t,
                          const sim_param_intervals<n> &,
                          /* if returns false, stop iterating */
                          Func);

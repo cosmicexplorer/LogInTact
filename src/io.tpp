@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 namespace LogInTact
 {
@@ -52,6 +53,7 @@ make_except_safe<Func> run_except_safe(Func f)
 template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
 void run_sim_async(sim::RealType t_f,
                    sim::RealType epsilon,
+                   size_t steps_to_equil,
                    const sample::sim_param_intervals<n> & intervals,
                    std::string outfile,
                    Func f)
@@ -64,8 +66,12 @@ void run_sim_async(sim::RealType t_f,
   } else if (pid) { /* is parent */
     close(pipe_fds[0]);
     signal(SIGCHLD, SIG_IGN);
-    producer_process<n, G, CHUNK_SIZE, Func>(t_f, epsilon, pipe_fds[1],
-                                             intervals, f);
+    constexpr size_t bytes_at_once = sizeof(sim::linear_sim<n, G>) * CHUNK_SIZE;
+    /* note: this increases pipe size to the size of a message, ensuring
+       no blocking occurs on a read/write from a pipe */
+    fcntl(pipe_fds[1], F_SETPIPE_SZ, bytes_at_once);
+    producer_process<n, G, CHUNK_SIZE, Func>(t_f, epsilon, steps_to_equil,
+                                             pipe_fds[1], intervals, f);
     close(pipe_fds[1]);
     int status;
     waitpid(pid, &status, 0);
@@ -87,8 +93,10 @@ void run_sim_async(sim::RealType t_f,
       out = open_writex_or_except(outfile);
       consumer_process<n, G, CHUNK_SIZE>(pipe_fds[0], out);
     } catch (io_exception & e) {
-      std::cerr << e.what() << std::endl;
+      std::cerr << "YO: " << e.what() << std::endl;
       _Exit(EXIT_FAILURE);
+    } catch (...) {
+      std::cerr << "HUH?" << std::endl;
     }
     _Exit(EXIT_SUCCESS);
   }
@@ -97,15 +105,26 @@ void run_sim_async(sim::RealType t_f,
 template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
 void producer_process(sim::RealType t_f,
                       sim::RealType epsilon,
-                      int write_pipe,
+                      size_t steps_to_equil,
+                      int write_pipe
+#ifdef NO_OUTPUT
+                      __attribute__((unused))
+#endif
+                      ,
                       const sample::sim_param_intervals<n> & intervals,
                       Func f)
 {
   using simu = sim::linear_sim<n, G>;
   sample::do_simulated_sample<n, G, CHUNK_SIZE>(
-      t_f, epsilon, intervals,
-      [&](const std::array<simu, CHUNK_SIZE> & results) {
+      t_f, epsilon, steps_to_equil, intervals,
+      [&](const std::array<simu, CHUNK_SIZE> & results
+#ifdef NO_OUTPUT
+          __attribute__((unused))
+#endif
+          ) {
+#ifndef NO_OUTPUT
         constexpr size_t num_bytes = sizeof(simu) * results.size();
+        std::cerr << "RESULTS_SIZE: " << num_bytes << std::endl;
         static_assert(num_bytes <= SSIZE_MAX, "undefined");
         const simu * results_ptr = results.data();
         ssize_t written_bytes = write(write_pipe, results_ptr, num_bytes);
@@ -115,13 +134,24 @@ void producer_process(sim::RealType t_f,
           throw io_exception("write of different size to parent pipe");
         }
         std::cerr << "here!" << std::endl;
+#endif
         return f();
       });
 }
 
 template <size_t n, size_t G, size_t CHUNK_SIZE>
-void consumer_process(int read_pipe, FILE * handle)
+void consumer_process(int read_pipe
+#ifdef NO_OUTPUT
+                      __attribute__((unused))
+#endif
+                      ,
+                      FILE * handle
+#ifdef NO_OUTPUT
+                      __attribute__((unused))
+#endif
+                      )
 {
+#ifndef NO_OUTPUT
   using simu = sim::linear_sim<n, G>;
   std::unique_ptr<simu[]> arr(new simu[CHUNK_SIZE]);
   constexpr size_t expected = sizeof(simu) * CHUNK_SIZE;
@@ -140,6 +170,7 @@ void consumer_process(int read_pipe, FILE * handle)
       throw io_exception("write to child file of unexpected length");
     }
   }
+#endif
 }
 }
 }

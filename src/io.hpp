@@ -32,6 +32,7 @@ template <size_t n,
           typename Func>
 void run_sim_async(sim::RealType,
                    sim::RealType,
+                   size_t,
                    const sample::sim_param_intervals<n> &,
                    std::string,
                    Func);
@@ -39,6 +40,7 @@ void run_sim_async(sim::RealType,
 template <size_t n, size_t G, size_t CHUNK_SIZE, typename Func>
 void producer_process(sim::RealType,
                       sim::RealType,
+                      size_t,
                       int,
                       const sample::sim_param_intervals<n> &,
                       Func);
