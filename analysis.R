@@ -6,7 +6,10 @@ outfile <- read.csv(
 
 serial <- outfile[outfile$parallel_type == 'NONE',]
 openmp <- outfile[outfile$parallel_type == 'OPENMP',]
-openmp$speedup <- serial[serial$chunk_size == openmp$chunk_size,]$time[1] / openmp$time
+for (i in 1:dim(openmp)[1]) {
+    el <- openmp[i,]
+    openmp$speedup[i] <- serial[serial$chunk_size == el$chunk_size,]$time[1] / el$time
+}
 
 ## slowdown charts
 png('serial-slowdown.png', width=500, height=500, type='cairo')
@@ -21,7 +24,7 @@ dev.off()
 
 png('parallel-slowdown-static.png', width=500, height=500, type='cairo')
 ggplot(openmp[openmp$sched_type == 'static',], aes(x=chunk_size,y=time)) +
-    geom_line(color=factor(threads)) +
+    geom_line(aes(color=factor(threads))) +
     xlab('Problem Size') +
     ylab('Time Taken (s)') +
     labs(color='Number of Threads') +
@@ -32,7 +35,7 @@ dev.off()
 
 png('parallel-slowdown-dynamic.png', width=500, height=500, type='cairo')
 ggplot(openmp[openmp$sched_type == 'dynamic',], aes(x=chunk_size,y=time)) +
-    geom_line(color=factor(threads)) +
+    geom_line(aes(color=factor(threads))) +
     xlab('Problem Size') +
     ylab('Time Taken (s)') +
     labs(color='Number of Threads') +
@@ -43,7 +46,7 @@ dev.off()
 
 png('parallel-slowdown-guided.png', width=500, height=500, type='cairo')
 ggplot(openmp[openmp$sched_type == 'guided',], aes(x=chunk_size,y=time)) +
-    geom_line(color=factor(threads)) +
+    geom_line(aes(color=factor(threads))) +
     xlab('Problem Size') +
     ylab('Time Taken (s)') +
     labs(color='Number of Threads') +
@@ -55,7 +58,7 @@ dev.off()
 ## speedup charts
 png('static-speedup.png', width=500, height=500, type='cairo')
 ggplot(openmp[openmp$sched_type == 'static',], aes(x=chunk_size,y=speedup)) +
-    geom_line(color=factor(threads)) +
+    geom_line(aes(color=factor(threads))) +
     xlab('Problem Size') +
     ylab('Speedup Over Serial Version') +
     labs(color='Number of Threads') +
@@ -66,7 +69,7 @@ dev.off()
 
 png('dynamic-speedup.png', width=500, height=500, type='cairo')
 ggplot(openmp[openmp$sched_type == 'dynamic',], aes(x=chunk_size,y=speedup)) +
-    geom_line(color=factor(threads)) +
+    geom_line(aes(color=factor(threads))) +
     xlab('Problem Size') +
     ylab('Speedup Over Serial Version') +
     labs(color='Number of Threads') +
@@ -77,7 +80,7 @@ dev.off()
 
 png('guided-speedup.png', width=500, height=500, type='cairo')
 ggplot(openmp[openmp$sched_type == 'guided',], aes(x=chunk_size,y=speedup)) +
-    geom_line(color=factor(threads)) +
+    geom_line(aes(color=factor(threads))) +
     xlab('Problem Size') +
     ylab('Speedup Over Serial Version') +
     labs(color='Number of Threads') +
@@ -89,7 +92,7 @@ dev.off()
 ## speedup combined
 png('parallel-speedup.png', width=500, height=500, type='cairo')
 ggplot(openmp, aes(x=threads,y=speedup)) +
-    geom_line(color=factor(sched_type)) +
+    geom_line(aes(color=factor(sched_type))) +
     xlab('Problem Size') +
     ylab('Speedup Over Serial Version') +
     labs(color='Schedule Type') +
