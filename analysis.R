@@ -62,7 +62,7 @@ ggplot(openmp[openmp$sched_type == 'static',], aes(x=chunk_size,y=speedup)) +
     xlab('Problem Size') +
     ylab('Speedup Over Serial Version') +
     labs(color='Number of Threads') +
-    ggtitle('Speedup of OpenMP Static Schedule By Problem Size') +
+    ggtitle('Speedup of OpenMP Static Schedule By Number of Threads') +
     scale_x_continuous(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0))
 dev.off()
@@ -73,7 +73,7 @@ ggplot(openmp[openmp$sched_type == 'dynamic',], aes(x=chunk_size,y=speedup)) +
     xlab('Problem Size') +
     ylab('Speedup Over Serial Version') +
     labs(color='Number of Threads') +
-    ggtitle('Speedup of OpenMP Dyanmic Schedule By Problem Size') +
+    ggtitle('Speedup of OpenMP Dynamic Schedule By Number of Threads') +
     scale_x_continuous(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0))
 dev.off()
@@ -84,19 +84,27 @@ ggplot(openmp[openmp$sched_type == 'guided',], aes(x=chunk_size,y=speedup)) +
     xlab('Problem Size') +
     ylab('Speedup Over Serial Version') +
     labs(color='Number of Threads') +
-    ggtitle('Speedup of OpenMP Guided Schedule By Problem Size') +
+    ggtitle('Speedup of OpenMP Guided Schedule By Number of Threads') +
     scale_x_continuous(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0))
 dev.off()
 
 ## speedup combined
 png('parallel-speedup.png', width=500, height=500, type='cairo')
-ggplot(openmp, aes(x=threads,y=speedup)) +
+
+averages <- vector()
+for (i in 1:dim(openmp)[1]) {
+    el <- openmp[i,]
+    averages[i] <- mean(openmp[openmp$threads == el$threads &
+                               openmp$sched_type == el$sched_type,]$speedup)
+}
+
+ggplot(openmp, aes(x=threads, y=averages)) +
     geom_line(aes(color=factor(sched_type))) +
-    xlab('Problem Size') +
+    xlab('Number of Threads') +
     ylab('Speedup Over Serial Version') +
     labs(color='Schedule Type') +
-    ggtitle('Speedup of OpenMP Static Schedule By Problem Size') +
+    ggtitle('Speedup of Different OpenMP Schedules By Number of Threads') +
     scale_x_continuous(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0))
 dev.off()

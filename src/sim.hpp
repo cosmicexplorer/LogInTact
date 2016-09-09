@@ -14,26 +14,40 @@ struct dimension_exception : std::runtime_error {
   }
 };
 
-typedef float RealType;
+namespace math
+{
+using RealType = float;
+template <size_t n>
+using Vector = std::array<RealType, n>;
 
-template <size_t n, size_t G>
+RealType Pi = 3.141592659;
+
+template <size_t n>
+inline RealType dist_euclid(const Vector<n> &, const Vector<n> &);
+inline RealType gaussian(const RealType, const RealType);
+template <size_t n>
+inline RealType
+    distance_gaussian(const Vector<n> &, const Vector<n> &, const RealType);
+}
+
+template <size_t n>
 struct linear_sim {
+  using math::RealType;
   static constexpr size_t VectorSize = n * sizeof(RealType);
   typedef std::array<RealType, n> Vector;
   typedef std::array<RealType, n * n> Matrix;
-  Vector s_0;
-  Vector D_cells;
-  Matrix W_cells;
-  Vector s_t;
-  bool failed   = false;
-  bool finished = true;
 
-  inline static RealType dist_euclid(const Vector &, const Vector &);
+  /* data */
+  Vector C_0;
+  Matrix W;
+  Vector C_t;
 
-  inline RealType D(size_t) const;
+  /* T, granularity */
+  void simulate(RealType, size_t);
+
+private:
+  /* returns derivative */
   inline RealType W(size_t, RealType, size_t) const;
-
-  void simulate(RealType, RealType, size_t);
 };
 }
 }

@@ -5,10 +5,14 @@ namespace LogInTact
 {
 namespace sim
 {
-template <size_t n, size_t G>
-RealType linear_sim<n, G>::dist_euclid(const Vector & a, const Vector & b)
+namespace math
+{
+template <size_t n>
+RealType dist_euclid(const Vector & a, const Vector & b)
 {
   RealType sum = 0;
+  /* TODO: ensure this gets vectorized! may have to use restrict pointers to
+     underlying array */
   for (size_t i = 0; i < n; ++i) {
     RealType diff = a[i] - b[i];
     sum += diff * diff;
@@ -16,43 +20,47 @@ RealType linear_sim<n, G>::dist_euclid(const Vector & a, const Vector & b)
   return sqrt(sum);
 }
 
-template <size_t n, size_t G>
-RealType linear_sim<n, G>::D(size_t i) const
+RealType gaussian(const RealType dist, const RealType sigma)
 {
-  return D_cells[i];
+  RealType sigma_sq  = sigma * sigma;
+  RealType firstTerm = pow(2 * sigma_sq * Pi, -.5);
+  RealType expTerm   = (dist * dist) / (2 * sigma_sq);
+  return firstTerm * exp(-expTerm);
 }
 
-template <size_t n, size_t G>
-RealType linear_sim<n, G>::W(size_t i, RealType j_c, size_t j) const
+template <size_t n>
+RealType distance_gaussian(const Vector<n> & base,
+                           const Vector<n> & other,
+                           const RealType sigma)
 {
-  return W_cells[i * n + j] * j_c;
+  return gaussian(dist_euclid(base, other), sigma);
+}
 }
 
-template <size_t n, size_t G>
-void linear_sim<n, G>::simulate(RealType t_f,
-                                RealType epsilon,
-                                size_t steps_to_equil)
+template <size_t n>
+RealType linear_sim<n>::W(size_t i, RealType j_c, size_t j) const
 {
-  const RealType delta = t_f / G;
-  Vector new_state(s_t);
-  Vector prev_equil_state(s_t);
-  for (size_t step = 0; step < G; ++step) {
-    if (step % steps_to_equil == 0) {
-      if (dist_euclid(prev_equil_state, s_t) < epsilon) {
-        finished = true;
-        return;
-      }
-      prev_equil_state = s_t;
-    }
+  return W[i * n + j] * j_c;
+}
+
+template <size_t n>
+void linear_sim<n>::simulate(RealType t_f, size_t steps_to_simulate)
+{
+  const RealType delta = t_f / steps_to_simulate;
+  C_t                  = C_0;
+  Vector tmp(C_t);
+  for (size_t step = 1; step < steps_to_simulate; ++step) {
     for (size_t i = 0; i < n; ++i) {
       RealType sum_W = 0;
-      /* NOTE: make sure this iterates across matrix in cache-friendly way */
+      /* NOTE: make sure this iterates across matrix in cache-friendly way / is
+         autovectorized */
       for (size_t j = 0; j < n; ++j) {
-        sum_W += W(i, s_t[j], j);
+        sum_W += W(i, C_t[j], j);
       }
-      new_state[i] += delta * (D(i) + sum_W);
+      tmp[i] += delta * sum_W;
     }
-    s_t = new_state;
+    /* TODO: does this do a deep copy? */
+    C_t = tmp;
   }
 }
 }

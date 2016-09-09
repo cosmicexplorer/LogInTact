@@ -1,5 +1,6 @@
 #include "../sim.hpp"
 #include <algorithm>
+#include <numeric>
 
 using namespace LogInTact;
 

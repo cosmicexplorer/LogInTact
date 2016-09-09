@@ -40,7 +40,7 @@ endef
 $(eval $(call do_flags,RELEASE,-O0 -ggdb,,\
 	-Ofast -march=native -flto,$$(CFLAGS) -fwhole-program))
 
-PARALLEL_METHOD ?= NONE
+PARALLEL_METHOD ?= OPENMP
 ifeq ($(PARALLEL_METHOD),NONE)
 else ifeq ($(PARALLEL_METHOD),OPENMP)
 OMP_SCHEDULE_TYPE ?= static
