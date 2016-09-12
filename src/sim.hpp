@@ -19,6 +19,8 @@ namespace math
 using RealType = float;
 template <size_t n>
 using Vector = std::array<RealType, n>;
+template <size_t n>
+using Matrix = std::array<RealType, n * n>;
 
 RealType Pi = 3.141592659;
 
@@ -32,10 +34,7 @@ inline RealType
 
 template <size_t n>
 struct linear_sim {
-  using math::RealType;
-  static constexpr size_t VectorSize = n * sizeof(RealType);
-  typedef std::array<RealType, n> Vector;
-  typedef std::array<RealType, n * n> Matrix;
+  using namespace math;
 
   /* data */
   Vector C_0;
@@ -43,11 +42,11 @@ struct linear_sim {
   Vector C_t;
 
   /* T, granularity */
-  void simulate(RealType, size_t);
+  void simulate(const RealType, const size_t);
 
 private:
   /* returns derivative */
-  inline RealType W(size_t, RealType, size_t) const;
+  inline RealType W(const size_t, const RealType, const size_t) const;
 };
 }
 }

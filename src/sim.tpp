@@ -38,13 +38,14 @@ RealType distance_gaussian(const Vector<n> & base,
 }
 
 template <size_t n>
-RealType linear_sim<n>::W(size_t i, RealType j_c, size_t j) const
+RealType
+    linear_sim<n>::W(const size_t i, const RealType j_c, const size_t j) const
 {
   return W[i * n + j] * j_c;
 }
 
 template <size_t n>
-void linear_sim<n>::simulate(RealType t_f, size_t steps_to_simulate)
+void linear_sim<n>::simulate(const RealType t_f, const size_t steps_to_simulate)
 {
   const RealType delta = t_f / steps_to_simulate;
   C_t                  = C_0;
