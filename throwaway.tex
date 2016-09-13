@@ -46,8 +46,13 @@ Variability $V$ of a network is defined using variation $v$ with an initial conc
 Finding stable networks $X$, then, is defined as an optimization problem. The most robust networks (the ones with the minimum variability) are (hopefully) likely to produce interesting network motifs.
 
 \begin{equation}
-  X^* = \min\limits_W \int\limits_{C_0 \in \,\mathbb{R}^n}V(C_0, W)
+  X^* = \argmin\limits_{C_0, W} V(C_0, W)
 \end{equation}
 
 Simulation of $(C_0, W)$ seems possible by discretizing choices of $C_0'$ and $W'$ normally distributed about $C_0$ and $W$.
+
+\section*{Simulation}
+Use some optimization algorithm to find $C_0, W$ with variance defined as optimal above. Instead of ``weighting'' the distance $\lvert W' - W \rvert$, $\lvert C'_0 - C_0 \rvert$, just generate new samples $C'_0, W'$ according to normal distribution centered at $C_0, W$ (don't weight these!). These neighboring samples can then be used as neighboring solutions to advance to the next iteration step of an iterative optimization algorithm such as simulated annealing or genetic programming.
+
+Can use iterative refinement for regions which display stability! Also, look for analytical solutions to the PDEs? That would make simulation a lot easier. Can use optimization algorithm like simulated annealing which requires neighboring solutions -- since we need to look at neighboring solutions anyway to gauge ``variance'', we can do this cheaply.
 \end{document}
